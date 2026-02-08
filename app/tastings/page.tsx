@@ -55,10 +55,16 @@ export default async function Tastings() {
                   <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
                     {tasting.wine_name}
                   </h2>
-                  <div className="flex items-center gap-3 text-sm text-stone-600 dark:text-stone-400 mb-2">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-stone-600 dark:text-stone-400 mb-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200">
                       {tasting.wine_type}
                     </span>
+                    {tasting.vintage && (
+                      <span className="text-xs font-medium">{tasting.vintage}</span>
+                    )}
+                    {tasting.producer && (
+                      <span className="text-xs">{tasting.producer}</span>
+                    )}
                     <span>{new Date(tasting.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'short',

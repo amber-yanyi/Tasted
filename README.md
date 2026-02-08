@@ -1,6 +1,6 @@
 # Tasted
 
-A simple, minimal website for logging wines and simplified WSET tasting notes.
+A simple, minimal website for logging wines and WSET Level 2 tasting notes.
 
 ## Setup
 
@@ -21,13 +21,34 @@ A simple, minimal website for logging wines and simplified WSET tasting notes.
      created_at timestamp with time zone default timezone('utc'::text, now()) not null,
      wine_name text not null,
      wine_type text not null,
+     vintage integer,
+     producer text,
+     region text,
+     clarity text,
+     appearance_intensity text,
+     color text,
      sweetness text not null,
      acidity text not null,
      tannin text,
      body text not null,
      finish text not null,
+     aromas text[],
+     quality_level text,
      notes text
    );
+   ```
+
+   If upgrading from the previous schema, run:
+   ```sql
+   alter table tastings
+     add column vintage integer,
+     add column producer text,
+     add column region text,
+     add column clarity text,
+     add column appearance_intensity text,
+     add column color text,
+     add column aromas text[],
+     add column quality_level text;
    ```
 
 4. Run the development server:
@@ -39,10 +60,14 @@ A simple, minimal website for logging wines and simplified WSET tasting notes.
 
 ## Features
 
-- Add wine tasting entries with simplified WSET categories
-- View all tastings
+- WSET Level 2 Systematic Approach to Tasting (SAT) form
+- Wine identity fields: name, type, vintage, producer, region
+- Appearance assessment: clarity, intensity, color (conditional on wine type)
+- Nose & palate: sweetness, acidity, tannin (red only), body, finish
+- Aroma tag selection grouped by primary, secondary, and tertiary categories
+- Quality level assessment
+- View all tastings with producer and vintage info
 - View individual tasting details
-- Conditional tannin field for red wines only
 - Dark mode support
 - Clean, minimal, editorial design
 
