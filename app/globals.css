@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --accent: #7c2d12;
+  --accent-light: #9a3412;
+  --border: #e7e5e4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1c1917;
+    --foreground: #fafaf9;
+    --accent: #dc2626;
+    --accent-light: #ef4444;
+    --border: #44403c;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
