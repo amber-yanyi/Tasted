@@ -12,6 +12,21 @@ const crimson = Crimson_Text({
 export const metadata: Metadata = {
   title: "Tasted - Wine Tasting Notes",
   description: "A simple way to remember wines",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Tasted",
+  },
+  applicationName: "Tasted",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#7c3aed",
 };
 
 export default function RootLayout({
@@ -21,6 +36,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={crimson.variable}>
+      <head>
+        <link rel="apple-touch-icon" href="/icon.svg" />
+      </head>
       <body className="antialiased min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">
