@@ -91,6 +91,9 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
               <AttributeRow label="Tannin" value={tasting.tannin} />
             )}
             <AttributeRow label="Body" value={tasting.body} />
+            {tasting.wine_type === 'Sparkling' && tasting.mousse && (
+              <AttributeRow label="Mousse" value={tasting.mousse} />
+            )}
             <AttributeRow label="Finish" value={tasting.finish} />
           </dl>
         </div>

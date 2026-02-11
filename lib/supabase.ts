@@ -20,6 +20,7 @@ export interface Tasting {
   acidity: 'Low' | 'Medium' | 'High'
   tannin: 'Low' | 'Medium' | 'High' | null
   body: 'Light' | 'Medium' | 'Full'
+  mousse: 'Delicate' | 'Creamy' | 'Aggressive' | null
   finish: 'Short' | 'Medium' | 'Long'
   aromas: string[] | null
   quality_level: string | null

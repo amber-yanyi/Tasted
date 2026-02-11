@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
@@ -8,20 +8,85 @@ const COLOR_OPTIONS: Record<string, string[]> = {
   Red: ['Purple', 'Ruby', 'Garnet', 'Tawny'],
   White: ['Lemon', 'Gold', 'Amber'],
   'Rosé': ['Pink', 'Salmon', 'Orange'],
-  Sparkling: ['Lemon', 'Gold', 'Amber'],
-  Fortified: ['Lemon', 'Gold', 'Amber'],
+  Sparkling: ['Lemon', 'Gold', 'Pink'],
+  Fortified: ['Lemon', 'Gold', 'Amber', 'Ruby', 'Tawny'],
 }
 
-const AROMA_CATEGORIES = {
-  Primary: ['Citrus', 'Green Fruit', 'Stone Fruit', 'Tropical Fruit', 'Red Fruit', 'Black Fruit', 'Floral', 'Herbal', 'Spice'],
-  Secondary: ['Yeast', 'Butter', 'Cream', 'Vanilla', 'Toast', 'Oak'],
-  Tertiary: ['Dried Fruit', 'Nutty', 'Earth', 'Leather', 'Tobacco', 'Mushroom', 'Honey'],
+const COLOR_SWATCHES: Record<string, string> = {
+  Purple: '#800080',
+  Ruby: '#E0115F',
+  Garnet: '#733635',
+  Tawny: '#CD5700',
+  Lemon: '#FAFA33',
+  Gold: '#FFD700',
+  Amber: '#FFBF00',
+  Pink: '#FFB6C1',
+  Salmon: '#FA8072',
+  Orange: '#FF8C00',
+}
+
+// Allowed aroma categories per wine type per group.
+// Groups not listed fall through to show all categories (e.g. Tertiary).
+const AROMA_CATEGORIES_BY_TYPE: Record<string, Partial<Record<string, string[]>>> = {
+  Red: {
+    Primary: ['Red Fruit', 'Black Fruit', 'Floral', 'Herbal', 'Spice'],
+    Secondary: ['Oak'],
+  },
+  White: {
+    Primary: ['Citrus', 'Green Fruit', 'Stone Fruit', 'Tropical Fruit', 'Floral', 'Herbal'],
+    Secondary: ['Malolactic', 'Oak'],
+  },
+  'Rosé': {
+    Primary: ['Citrus', 'Stone Fruit', 'Red Fruit', 'Floral'],
+    Secondary: ['Malolactic', 'Oak'],
+  },
+  Sparkling: {
+    Primary: ['Citrus', 'Green Fruit', 'Stone Fruit', 'Red Fruit', 'Floral'],
+    Secondary: ['Yeast'],
+  },
+  Fortified: {
+    Primary: ['Citrus', 'Stone Fruit', 'Tropical Fruit', 'Red Fruit', 'Black Fruit', 'Floral', 'Spice'],
+    Secondary: ['Oak'],
+    Tertiary: ['Dried Fruit', 'Nutty', 'Honey', 'Caramel', 'Chocolate'],
+  },
+}
+
+const AROMA_DESCRIPTORS: Record<string, Record<string, string[]>> = {
+  Primary: {
+    'Citrus': ['Lemon', 'Lime', 'Grapefruit', 'Orange'],
+    'Green Fruit': ['Green Apple', 'Pear', 'Gooseberry'],
+    'Stone Fruit': ['Peach', 'Apricot', 'Nectarine'],
+    'Tropical Fruit': ['Banana', 'Pineapple', 'Mango', 'Passion Fruit'],
+    'Red Fruit': ['Strawberry', 'Raspberry', 'Red Cherry', 'Plum', 'Redcurrant'],
+    'Black Fruit': ['Blackberry', 'Blackcurrant', 'Blueberry', 'Black Cherry'],
+    'Floral': ['Blossom', 'Rose', 'Violet'],
+    'Herbal': ['Green Bell Pepper', 'Grass', 'Mint', 'Eucalyptus'],
+    'Spice': ['Black Pepper', 'Liquorice', 'Cinnamon'],
+  },
+  Secondary: {
+    'Yeast': ['Bread', 'Pastry', 'Biscuit', 'Brioche'],
+    'Malolactic': ['Butter', 'Cream', 'Cheese'],
+    'Oak': ['Vanilla', 'Toast', 'Cedar', 'Coconut', 'Smoke'],
+  },
+  Tertiary: {
+    'Dried Fruit': ['Fig', 'Prune', 'Raisin', 'Sultana', 'Marmalade'],
+    'Nutty': ['Almond', 'Hazelnut', 'Walnut', 'Marzipan'],
+    'Earth': ['Wet Leaves', 'Forest Floor', 'Clay', 'Mineral'],
+    'Leather': ['Leather', 'Suede', 'Game'],
+    'Tobacco': ['Tobacco', 'Cigar Box', 'Dried Leaves'],
+    'Mushroom': ['Mushroom', 'Truffle'],
+    'Honey': ['Honey', 'Beeswax'],
+    'Caramel': ['Caramel', 'Toffee', 'Butterscotch'],
+    'Chocolate': ['Dark Chocolate', 'Coffee', 'Mocha'],
+  },
 }
 
 export default function AddTasting() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [openCategory, setOpenCategory] = useState<string | null>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState({
     wine_name: '',
@@ -36,11 +101,24 @@ export default function AddTasting() {
     acidity: '' as 'Low' | 'Medium' | 'High' | '',
     tannin: '' as 'Low' | 'Medium' | 'High' | '',
     body: '' as 'Light' | 'Medium' | 'Full' | '',
+    mousse: '' as 'Delicate' | 'Creamy' | 'Aggressive' | '',
     finish: '' as 'Short' | 'Medium' | 'Long' | '',
     aromas: [] as string[],
     quality_level: '',
     notes: '',
   })
+
+  useEffect(() => {
+    if (!openCategory) return
+
+    function handleMouseDown(e: MouseEvent) {
+      if (popoverRef.current && popoverRef.current.contains(e.target as Node)) return
+      setOpenCategory(null)
+    }
+
+    document.addEventListener('mousedown', handleMouseDown)
+    return () => document.removeEventListener('mousedown', handleMouseDown)
+  }, [openCategory])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,6 +139,7 @@ export default function AddTasting() {
         acidity: formData.acidity,
         tannin: formData.wine_type === 'Red' ? formData.tannin : null,
         body: formData.body,
+        mousse: formData.wine_type === 'Sparkling' ? formData.mousse || null : null,
         finish: formData.finish,
         aromas: formData.aromas.length > 0 ? formData.aromas : null,
         quality_level: formData.quality_level || null,
@@ -77,49 +156,95 @@ export default function AddTasting() {
   }
 
   const handleWineTypeChange = (value: string) => {
-    setFormData({ ...formData, wine_type: value as typeof formData.wine_type, color: '', tannin: '' })
+    setFormData({ ...formData, wine_type: value as typeof formData.wine_type, color: '', tannin: '', mousse: '' })
   }
 
-  const toggleAroma = (aroma: string) => {
+  const toggleAroma = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      aromas: prev.aromas.includes(aroma)
-        ? prev.aromas.filter(a => a !== aroma)
-        : [...prev.aromas, aroma],
+      aromas: prev.aromas.includes(value)
+        ? prev.aromas.filter(a => a !== value)
+        : [...prev.aromas, value],
     }))
   }
 
   const RadioGroup = ({
     label,
-    name,
     options,
     value,
     onChange,
   }: {
     label: string
-    name: string
     options: string[]
     value: string
     onChange: (value: string) => void
   }) => (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-stone-700 dark:text-stone-300">
+      <span className="block text-sm font-medium text-stone-700 dark:text-stone-300">
         {label}
-      </label>
-      <div className="flex flex-wrap gap-4">
+      </span>
+      <div className="flex flex-wrap gap-2">
         {options.map((option) => (
-          <label key={option} className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name={name}
-              value={option}
-              checked={value === option}
-              onChange={(e) => onChange(e.target.value)}
-              className="w-4 h-4 text-stone-900 dark:text-stone-100"
-              required
-            />
-            <span className="text-sm text-stone-600 dark:text-stone-400">{option}</span>
-          </label>
+          <button
+            key={option}
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onChange(value === option ? '' : option)
+            }}
+            className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              value === option
+                ? 'bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 border-stone-900 dark:border-stone-100'
+                : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600'
+            }`}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  const ColorRadioGroup = ({
+    label,
+    options,
+    value,
+    onChange,
+  }: {
+    label: string
+    options: string[]
+    value: string
+    onChange: (value: string) => void
+  }) => (
+    <div className="space-y-2">
+      <span className="block text-sm font-medium text-stone-700 dark:text-stone-300">
+        {label}
+      </span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onChange(value === option ? '' : option)
+            }}
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              value === option
+                ? 'bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 border-stone-900 dark:border-stone-100'
+                : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600'
+            }`}
+          >
+            {COLOR_SWATCHES[option] && (
+              <span
+                className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-stone-600 shrink-0"
+                style={{ backgroundColor: COLOR_SWATCHES[option] }}
+              />
+            )}
+            {option}
+          </button>
         ))}
       </div>
     </div>
@@ -163,7 +288,6 @@ export default function AddTasting() {
 
         <RadioGroup
           label="Wine Type"
-          name="wine_type"
           options={['Red', 'White', 'Rosé', 'Sparkling', 'Fortified']}
           value={formData.wine_type}
           onChange={handleWineTypeChange}
@@ -213,12 +337,22 @@ export default function AddTasting() {
           />
         </div>
 
+        {!formData.wine_type ? (
+          <div className="mt-8 border border-dashed border-stone-300 dark:border-stone-700 rounded-xl py-12 px-6 text-center">
+            <p className="text-lg font-serif text-stone-600 dark:text-stone-400">
+              Select a Wine Type to begin tasting
+            </p>
+            <p className="text-sm text-stone-500 dark:text-stone-500 mt-1">
+              The full SAT form will appear once you choose above.
+            </p>
+          </div>
+        ) : (
+        <>
         {/* ── Appearance ── */}
         <SectionHeading>Appearance</SectionHeading>
 
         <RadioGroup
           label="Clarity"
-          name="clarity"
           options={['Clear', 'Hazy']}
           value={formData.clarity}
           onChange={(value) => setFormData({ ...formData, clarity: value as typeof formData.clarity })}
@@ -226,16 +360,14 @@ export default function AddTasting() {
 
         <RadioGroup
           label="Intensity"
-          name="appearance_intensity"
           options={['Pale', 'Medium', 'Deep']}
           value={formData.appearance_intensity}
           onChange={(value) => setFormData({ ...formData, appearance_intensity: value as typeof formData.appearance_intensity })}
         />
 
         {formData.wine_type && (
-          <RadioGroup
+          <ColorRadioGroup
             label="Color"
-            name="color"
             options={COLOR_OPTIONS[formData.wine_type] || []}
             value={formData.color}
             onChange={(value) => setFormData({ ...formData, color: value })}
@@ -247,7 +379,6 @@ export default function AddTasting() {
 
         <RadioGroup
           label="Sweetness"
-          name="sweetness"
           options={['Dry', 'Medium', 'Sweet']}
           value={formData.sweetness}
           onChange={(value) => setFormData({ ...formData, sweetness: value as typeof formData.sweetness })}
@@ -255,7 +386,6 @@ export default function AddTasting() {
 
         <RadioGroup
           label="Acidity"
-          name="acidity"
           options={['Low', 'Medium', 'High']}
           value={formData.acidity}
           onChange={(value) => setFormData({ ...formData, acidity: value as typeof formData.acidity })}
@@ -264,7 +394,6 @@ export default function AddTasting() {
         {formData.wine_type === 'Red' && (
           <RadioGroup
             label="Tannin"
-            name="tannin"
             options={['Low', 'Medium', 'High']}
             value={formData.tannin}
             onChange={(value) => setFormData({ ...formData, tannin: value as typeof formData.tannin })}
@@ -273,15 +402,22 @@ export default function AddTasting() {
 
         <RadioGroup
           label="Body"
-          name="body"
           options={['Light', 'Medium', 'Full']}
           value={formData.body}
           onChange={(value) => setFormData({ ...formData, body: value as typeof formData.body })}
         />
 
+        {formData.wine_type === 'Sparkling' && (
+          <RadioGroup
+            label="Mousse"
+            options={['Delicate', 'Creamy', 'Aggressive']}
+            value={formData.mousse}
+            onChange={(value) => setFormData({ ...formData, mousse: value as typeof formData.mousse })}
+          />
+        )}
+
         <RadioGroup
           label="Finish"
-          name="finish"
           options={['Short', 'Medium', 'Long']}
           value={formData.finish}
           onChange={(value) => setFormData({ ...formData, finish: value as typeof formData.finish })}
@@ -290,32 +426,112 @@ export default function AddTasting() {
         {/* ── Aromas & Flavors ── */}
         <SectionHeading>Aromas & Flavors</SectionHeading>
 
-        {Object.entries(AROMA_CATEGORIES).map(([category, aromas]) => (
-          <div key={category} className="space-y-2">
+        {formData.aromas.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {formData.aromas.map((descriptor) => (
+              <span
+                key={descriptor}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200"
+              >
+                {descriptor}
+                <button
+                  type="button"
+                  onClick={() => toggleAroma(descriptor)}
+                  className="ml-0.5 hover:text-stone-900 dark:hover:text-stone-100"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {Object.entries(AROMA_DESCRIPTORS).map(([group, categories]) => {
+          const allowed = formData.wine_type
+            ? AROMA_CATEGORIES_BY_TYPE[formData.wine_type]?.[group]
+            : null
+          const visibleCategories = allowed
+            ? Object.entries(categories).filter(([cat]) => allowed.includes(cat))
+            : Object.entries(categories)
+
+          if (visibleCategories.length === 0) return null
+
+          return (
+          <div key={group} className="space-y-2">
             <label className="block text-sm font-medium text-stone-700 dark:text-stone-300">
-              {category}
+              {group}
             </label>
             <div className="flex flex-wrap gap-2">
-              {aromas.map((aroma) => {
-                const selected = formData.aromas.includes(aroma)
+              {visibleCategories.map(([category, descriptors]) => {
+                const categorySelected = formData.aromas.includes(category)
+                const descriptorCount = descriptors.filter(d => formData.aromas.includes(d)).length
+                const isActive = categorySelected || descriptorCount > 0
+                const isOpen = openCategory === category
+
                 return (
-                  <button
-                    key={aroma}
-                    type="button"
-                    onClick={() => toggleAroma(aroma)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                      selected
-                        ? 'bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 border-stone-900 dark:border-stone-100'
-                        : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600'
-                    }`}
-                  >
-                    {aroma}
-                  </button>
+                  <div key={category} className={`relative ${isOpen ? 'z-20' : ''}`} ref={isOpen ? popoverRef : undefined}>
+                    <div
+                      className={`inline-flex items-center rounded-full border transition-colors ${
+                        isActive
+                          ? 'bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 border-stone-900 dark:border-stone-100'
+                          : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleAroma(category)}
+                        className="pl-3 pr-2 py-1.5 text-sm font-medium inline-flex items-center gap-1.5"
+                      >
+                        {category}
+                        {descriptorCount > 0 && (
+                          <span className="opacity-75 text-xs">+{descriptorCount}</span>
+                        )}
+                      </button>
+                      {isActive && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenCategory(isOpen ? null : category)
+                          }}
+                          className={`pr-2.5 pl-1 py-1.5 border-l ${
+                            isActive
+                              ? 'border-stone-600 dark:border-stone-400'
+                              : 'border-stone-300 dark:border-stone-700'
+                          }`}
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d={isOpen ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {isOpen && (
+                      <div className="absolute z-20 mt-2 left-0 min-w-[200px] bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg shadow-lg p-2">
+                        {descriptors.map((descriptor) => (
+                          <label
+                            key={descriptor}
+                            className="flex items-center gap-2.5 py-1.5 px-2 rounded-md hover:bg-stone-50 dark:hover:bg-stone-700/50 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.aromas.includes(descriptor)}
+                              onChange={() => toggleAroma(descriptor)}
+                              className="w-4 h-4 rounded border-stone-300 dark:border-stone-600"
+                            />
+                            <span className="text-sm text-stone-700 dark:text-stone-300">{descriptor}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </div>
           </div>
-        ))}
+          )
+        })}
 
         {/* ── Conclusions ── */}
         <SectionHeading>Conclusions</SectionHeading>
@@ -355,11 +571,13 @@ export default function AddTasting() {
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !formData.wine_type}
           className="w-full px-8 py-3 bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 rounded-md hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Saving...' : 'Save Tasting'}
         </button>
+        </>
+        )}
       </form>
     </div>
   )
