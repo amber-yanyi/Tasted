@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 
 const COLOR_OPTIONS: Record<string, string[]> = {
   Red: ['Purple', 'Ruby', 'Garnet', 'Tawny'],
@@ -126,7 +126,21 @@ export default function AddTasting() {
     setError(null)
 
     try {
+      const supabase = createClient()
+
+      // Get current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        setError('You must be logged in to add a tasting')
+        setLoading(false)
+        return
+      }
+
       const { error: supabaseError } = await supabase.from('tastings').insert({
+        user_id: user.id,
         wine_name: formData.wine_name,
         wine_type: formData.wine_type,
         vintage: formData.vintage ? parseInt(formData.vintage) : null,

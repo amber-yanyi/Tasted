@@ -1,16 +1,28 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { notFound, redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function TastingDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const supabase = await createClient()
 
+  // Check authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Fetch tasting and ensure it belongs to the user
   const { data: tasting, error } = await supabase
     .from('tastings')
     .select('*')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (error || !tasting) {

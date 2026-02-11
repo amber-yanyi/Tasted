@@ -8,6 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export interface Tasting {
   id: string
   created_at: string
+  user_id: string
   wine_name: string
   wine_type: 'Red' | 'White' | 'Rosé' | 'Sparkling' | 'Fortified'
   vintage: number | null
