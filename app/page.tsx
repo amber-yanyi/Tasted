@@ -8,7 +8,7 @@ export default async function Home() {
   } = await supabase.auth.getUser()
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-24">
+    <div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
       <div className="text-center space-y-8">
         <h1 className="font-serif text-6xl md:text-7xl font-semibold text-stone-900 dark:text-stone-100">
           Tasted
@@ -51,7 +51,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="mt-24 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+      <div className="hidden sm:grid mt-24 grid-cols-3 gap-8 text-center">
         <div className="space-y-2">
           <h3 className="font-serif text-lg font-semibold text-stone-900 dark:text-stone-100">
             Structured SAT Notes
