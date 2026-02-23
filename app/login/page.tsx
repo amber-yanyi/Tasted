@@ -39,10 +39,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-stone-950 px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
+        <div className="bg-white dark:bg-stone-900 rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-center text-stone-900 dark:text-stone-100 mb-8">
             Welcome Back
           </h1>
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
                 },
               })
             }}
-            className="w-full min-h-[48px] flex items-center justify-center gap-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors"
+            className="w-full min-h-[48px] flex items-center justify-center gap-3 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-semibold py-3 px-4 rounded-lg transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -70,16 +70,16 @@ export default function LoginPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-stone-300 dark:border-stone-700" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-4 text-gray-500">or</span>
+              <span className="bg-white dark:bg-stone-900 px-4 text-stone-500 dark:text-stone-400">or</span>
             </div>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -87,7 +87,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2"
               >
                 Email
               </label>
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 text-base border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
                 placeholder="you@example.com"
               />
             </div>
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2"
               >
                 Password
               </label>
@@ -117,7 +117,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 text-base border border-stone-300 dark:border-stone-700 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
@@ -125,17 +125,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full min-h-[48px] bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+              className="w-full min-h-[48px] bg-stone-900 hover:bg-stone-800 disabled:bg-stone-400 dark:bg-stone-100 dark:hover:bg-stone-200 dark:disabled:bg-stone-600 text-stone-50 dark:text-stone-900 font-semibold py-3 px-4 rounded-lg transition-colors"
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-stone-600 dark:text-stone-400">
             Don&apos;t have an account?{' '}
             <Link
               href="/signup"
-              className="text-purple-600 hover:text-purple-700 font-semibold"
+              className="text-stone-900 dark:text-stone-100 hover:text-stone-700 dark:hover:text-stone-300 font-semibold"
             >
               Sign up
             </Link>
