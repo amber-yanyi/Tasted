@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import DeleteTastingButton from '@/components/DeleteTastingButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,9 +53,20 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="font-serif text-4xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
-            {tasting.wine_name}
-          </h1>
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <h1 className="font-serif text-4xl font-semibold text-stone-900 dark:text-stone-100">
+              {tasting.wine_name}
+            </h1>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/tastings/${id}/edit`}
+                className="px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700 rounded-md hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+              >
+                Edit
+              </Link>
+              <DeleteTastingButton id={id} />
+            </div>
+          </div>
           <div className="flex flex-wrap items-center gap-3 text-stone-600 dark:text-stone-400">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200">
               {tasting.wine_type}
