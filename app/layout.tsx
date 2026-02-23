@@ -11,7 +11,7 @@ const crimson = Crimson_Text({
 
 export const metadata: Metadata = {
   title: "Tasted - Wine Tasting Notes",
-  description: "A simple way to remember wines",
+  description: "Remember every glass. A wine journal built on WSET tasting logic.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -19,6 +19,18 @@ export const metadata: Metadata = {
     title: "Tasted",
   },
   applicationName: "Tasted",
+  openGraph: {
+    title: "Tasted",
+    description: "Remember every glass. A wine journal built on WSET tasting logic.",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tasted",
+    description: "Remember every glass. A wine journal built on WSET tasting logic.",
+    images: ["/og-image.jpg"],
+  },
 };
 
 export const viewport = {
@@ -26,7 +38,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#7c3aed",
+  themeColor: "#1c1917",
 };
 
 export default function RootLayout({
