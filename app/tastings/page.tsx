@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import type { Tasting } from '@/lib/supabase'
+import type { Tasting } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
