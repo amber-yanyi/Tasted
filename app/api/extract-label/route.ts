@@ -5,7 +5,6 @@ import {
   LABEL_RESPONSE_SCHEMA,
   EXTRACTED_LABEL_FIELDS,
   type ExtractedLabel,
-  type FieldSource,
 } from '@/lib/labelExtraction'
 
 // The Gemini key lives only here, server-side. The browser posts an image and
@@ -135,61 +134,14 @@ export async function POST(request: Request) {
     }
   }
 
-  // Provenance, so the UI can distinguish "read off the glass" from "we filled
-  // this in for you". Derived in code by matching each value against the
-  // model's verbatim transcription rather than asking the model to classify its
-  // own fields — Flash-Lite is reliable at transcribing and at inferring, but
-  // not at that kind of self-attribution, and it tended to mark plainly
-  // printed values as inferred.
-  const labelText = typeof raw.label_text === 'string' ? raw.label_text : ''
-  const sources: Partial<Record<keyof ExtractedLabel, FieldSource>> = {}
-  for (const key of EXTRACTED_LABEL_FIELDS) {
-    const value = fields[key]
-    if (value === null) continue
-    // vintage and alcohol are never inferred (see the prompt), so whatever
-    // survived validation came off the label.
-    sources[key] =
-      key === 'vintage' || key === 'alcohol'
-        ? 'label'
-        : appearsOnLabel(String(value), labelText)
-          ? 'label'
-          : 'inferred'
-  }
+  // Inferred values are returned like read ones, unmarked. They are appellation
+  // facts rather than hedges, and every field lands in an editable input, so a
+  // wrong inference is corrected exactly like a misread one.
+  //
+  // label_text stays in the response for debugging: when a field looks wrong,
+  // the transcription shows whether the model misread the label or reasoned
+  // from it incorrectly.
+  const labelText = typeof raw.label_text === 'string' ? raw.label_text : null
 
-  return NextResponse.json({
-    fields,
-    field_sources: sources,
-    label_text: labelText || null,
-    model,
-    usage,
-    searched,
-  })
-}
-
-/** Strip accents, punctuation, and case so "Château" matches "CHATEAU". */
-function normalizeForMatch(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
-}
-
-/**
- * Whether a field value is visible on the label.
- *
- * A comma-separated value counts as printed only if every part is — a blend
- * where the label named one grape and the model added the rest is inferred, and
- * flagging it for review is the useful answer.
- */
-function appearsOnLabel(value: string, labelText: string): boolean {
-  if (!labelText) return false
-  const haystack = normalizeForMatch(labelText)
-  const parts = value
-    .split(',')
-    .map((p) => normalizeForMatch(p))
-    .filter(Boolean)
-  if (parts.length === 0) return false
-  return parts.every((part) => haystack.includes(part))
+  return NextResponse.json({ fields, label_text: labelText, model, usage, searched })
 }

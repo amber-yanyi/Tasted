@@ -18,11 +18,11 @@
  * no amount of research can supply them, and guessing would hollow out the part
  * of the app that carries the user's own developing palate.
  *
- * Every inferred field is labelled as such in `field_sources` so the taster can
- * see what came off the glass and what came from the model, and correct it.
+ * Inferred values are returned like any other: they are high-confidence facts
+ * about the appellation, not hedges, and flagging them for review would put work
+ * back on the taster for no gain. Every field lands in an editable input, so a
+ * wrong one is corrected the same way a misread one is.
  */
-
-export type FieldSource = 'label' | 'inferred'
 
 export type ExtractedLabel = {
   wine_name: string | null
@@ -33,12 +33,6 @@ export type ExtractedLabel = {
   grape_variety: string | null
   wine_type: 'Red' | 'White' | 'Rosé' | 'Sparkling' | 'Fortified' | null
   alcohol: number | null
-}
-
-export type ExtractionResult = {
-  fields: ExtractedLabel
-  /** Per-field provenance. Absent key = field is null. */
-  field_sources: Partial<Record<keyof ExtractedLabel, FieldSource>>
 }
 
 export const EXTRACTED_LABEL_FIELDS: (keyof ExtractedLabel)[] = [
@@ -52,7 +46,6 @@ export const EXTRACTED_LABEL_FIELDS: (keyof ExtractedLabel)[] = [
   'alcohol',
 ]
 
-const SOURCE_ENUM = ['label', 'inferred'] as const
 
 // Gemini's structured-output schema. Fields stay nullable — an unreadable label
 // should yield nulls, not invention — but "not printed" is no longer a reason
@@ -110,7 +103,7 @@ export const LABEL_RESPONSE_SCHEMA = {
     label_text: {
       type: 'string',
       description:
-        'Every word visible on the label, transcribed verbatim in reading order, original languages, no translation or commentary. Provenance is derived from this by matching field values against it, so transcribe faithfully — including small print.',
+        'Every word visible on the label, transcribed verbatim in reading order, original languages, no translation or commentary. Transcribe faithfully, including small print.',
     },
   },
   required: [
@@ -149,7 +142,7 @@ This list is illustrative, not exhaustive — apply the same reasoning to any ap
 
 Give the dominant varieties rather than everything an appellation legally permits: Châteauneuf-du-Pape allows thirteen grapes, but "Grenache, Syrah, Mourvèdre" is the useful answer. Where a region genuinely spans several styles with no way to narrow it down — non-vintage Champagne could be any blend of three grapes — leave the field null rather than picking arbitrarily.
 
-Also return label_text: a verbatim transcription of every word visible on the label, in reading order and in its original language, with no translation or commentary. Include the small print. This is used to work out which fields were printed and which you supplied, so the taster knows what to double-check — transcribe faithfully rather than tidying up.
+Before filling any field, return label_text: a verbatim transcription of every word visible on the label, in reading order and in its original language, with no translation or commentary. Include the small print. Transcribing first keeps the extracted fields anchored to what the bottle actually says.
 
 Inference fills gaps; it never overrides the glass. Names printed on the label — producer, cuvée, appellation — must be copied exactly as printed, character for character, even when they resemble a producer you know. If the label reads "Château Beauregard", that is the answer, and correcting it to a similarly-named estate you are more familiar with turns a correct reading into a wrong one. Transcribe first, and only reach for knowledge where the label is silent.
 
