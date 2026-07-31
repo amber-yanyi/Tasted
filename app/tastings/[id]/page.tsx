@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import DeleteTastingButton from '@/components/DeleteTastingButton'
+import { getLabelImageUrl } from '@/lib/labelStorage'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +30,11 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
   if (error || !tasting) {
     notFound()
   }
+
+  // The bucket is private, so the label needs a signed URL at render time.
+  const labelUrl = tasting.label_image_url
+    ? await getLabelImageUrl(supabase, tasting.label_image_url)
+    : null
 
   const AttributeRow = ({ label, value }: { label: string; value: string | null }) => {
     if (!value) return null
@@ -82,12 +88,35 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
               })}
             </span>
           </div>
-          {(tasting.producer || tasting.region) && (
+          {(tasting.producer || tasting.region || tasting.country) && (
             <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-              {[tasting.producer, tasting.region].filter(Boolean).join(' · ')}
+              {[tasting.producer, tasting.region, tasting.country]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          )}
+          {(tasting.grape_variety || tasting.alcohol) && (
+            <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+              {[tasting.grape_variety, tasting.alcohol && `${tasting.alcohol}% ABV`]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
           )}
         </div>
+
+        {labelUrl && (
+          <div>
+            <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
+              Label
+            </h2>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={labelUrl}
+              alt={`Label of ${tasting.wine_name}`}
+              className="w-full max-w-sm rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-900"
+            />
+          </div>
+        )}
 
         {/* Appearance */}
         {(tasting.clarity || tasting.appearance_intensity || tasting.color) && (

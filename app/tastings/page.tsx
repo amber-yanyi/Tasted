@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Tasting } from '@/lib/types'
+import { LABELS_BUCKET } from '@/lib/labelStorage'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,6 +24,21 @@ export default async function Tastings() {
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+
+  // Sign all the thumbnails in one call rather than once per row.
+  const labelPaths = (tastings ?? [])
+    .map((t: Tasting) => t.label_image_url)
+    .filter((p): p is string => Boolean(p))
+
+  const thumbnails = new Map<string, string>()
+  if (labelPaths.length > 0) {
+    const { data: signed } = await supabase.storage
+      .from(LABELS_BUCKET)
+      .createSignedUrls(labelPaths, 3600)
+    for (const entry of signed ?? []) {
+      if (entry.path && entry.signedUrl) thumbnails.set(entry.path, entry.signedUrl)
+    }
+  }
 
   if (error) {
     return (
@@ -65,6 +81,14 @@ export default async function Tastings() {
               className="block p-6 border border-stone-200 dark:border-stone-800 rounded-lg hover:border-stone-300 dark:hover:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-900/50 transition-colors"
             >
               <div className="flex items-start justify-between gap-4">
+                {tasting.label_image_url && thumbnails.get(tasting.label_image_url) && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={thumbnails.get(tasting.label_image_url)}
+                    alt=""
+                    className="w-14 h-20 object-cover rounded border border-stone-200 dark:border-stone-800 shrink-0 bg-stone-100 dark:bg-stone-900"
+                  />
+                )}
                 <div className="flex-1">
                   <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
                     {tasting.wine_name}
@@ -78,6 +102,9 @@ export default async function Tastings() {
                     )}
                     {tasting.producer && (
                       <span className="text-xs">{tasting.producer}</span>
+                    )}
+                    {tasting.grape_variety && (
+                      <span className="text-xs">{tasting.grape_variety}</span>
                     )}
                     <span>{new Date(tasting.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',

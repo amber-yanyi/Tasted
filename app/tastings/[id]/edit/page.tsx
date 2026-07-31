@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import TastingForm, { TastingFormData, toTastingPayload } from '@/components/TastingForm'
+import { uploadLabelImage, getLabelImageUrl, deleteLabelImage } from '@/lib/labelStorage'
 
 export default function EditTasting() {
   const router = useRouter()
@@ -12,6 +13,11 @@ export default function EditTasting() {
   const [initialData, setInitialData] = useState<TastingFormData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
+  // The stored path of the label already on this tasting, and a signed URL for
+  // showing it. Kept apart from the form so a replacement can clean up the old
+  // file after the new one is safely uploaded.
+  const [existingPath, setExistingPath] = useState<string | null>(null)
+  const [existingUrl, setExistingUrl] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchTasting() {
@@ -37,12 +43,20 @@ export default function EditTasting() {
         return
       }
 
+      if (tasting.label_image_url) {
+        setExistingPath(tasting.label_image_url)
+        setExistingUrl(await getLabelImageUrl(supabase, tasting.label_image_url))
+      }
+
       setInitialData({
         wine_name: tasting.wine_name ?? '',
         wine_type: tasting.wine_type ?? '',
         vintage: tasting.vintage ? String(tasting.vintage) : '',
         producer: tasting.producer ?? '',
         region: tasting.region ?? '',
+        country: tasting.country ?? '',
+        grape_variety: tasting.grape_variety ?? '',
+        alcohol: tasting.alcohol != null ? String(tasting.alcohol) : '',
         clarity: tasting.clarity ?? '',
         appearance_intensity: tasting.appearance_intensity ?? '',
         color: tasting.color ?? '',
@@ -61,7 +75,11 @@ export default function EditTasting() {
     fetchTasting()
   }, [params.id, router])
 
-  const handleSubmit = async (formData: TastingFormData) => {
+  const handleSubmit = async (
+    formData: TastingFormData,
+    labelImage: File | null,
+    labelCleared: boolean
+  ) => {
     setError(null)
 
     const supabase = createClient()
@@ -74,13 +92,32 @@ export default function EditTasting() {
       return
     }
 
+    // A new file means replace; no file and no existing preview means the user
+    // removed the photo; otherwise keep what is already there.
+    let labelPath = existingPath
+    if (labelImage) {
+      try {
+        labelPath = await uploadLabelImage(supabase, user.id, labelImage)
+      } catch {
+        setError('Could not upload the new label photo. Keeping the previous one.')
+        labelPath = existingPath
+      }
+    } else if (labelCleared) {
+      labelPath = null
+    }
+
     const { error: supabaseError } = await supabase
       .from('tastings')
-      .update(toTastingPayload(formData))
+      .update({ ...toTastingPayload(formData), label_image_url: labelPath })
       .eq('id', params.id)
       .eq('user_id', user.id)
 
     if (supabaseError) throw supabaseError
+
+    // Only now that the row points elsewhere is the old file safe to drop.
+    if (existingPath && labelPath !== existingPath) {
+      await deleteLabelImage(supabase, existingPath)
+    }
 
     router.push(`/tastings/${params.id}`)
   }
@@ -127,6 +164,7 @@ export default function EditTasting() {
         submitLabel="Update Tasting"
         loadingLabel="Updating..."
         error={error}
+        existingImageUrl={existingUrl}
       />
     </div>
   )

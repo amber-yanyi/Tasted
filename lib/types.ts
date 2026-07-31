@@ -7,6 +7,10 @@ export interface Tasting {
   vintage: number | null
   producer: string | null
   region: string | null
+  country: string | null
+  grape_variety: string | null
+  alcohol: number | null
+  label_image_url: string | null
   clarity: 'Clear' | 'Hazy' | null
   appearance_intensity: 'Pale' | 'Medium' | 'Deep' | null
   color: string | null

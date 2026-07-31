@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import LabelCapture from './LabelCapture'
+import type { ExtractedLabel } from '@/lib/labelExtraction'
 
 const COLOR_OPTIONS: Record<string, string[]> = {
   Red: ['Purple', 'Ruby', 'Garnet', 'Tawny'],
@@ -85,6 +87,9 @@ export type TastingFormData = {
   vintage: string
   producer: string
   region: string
+  country: string
+  grape_variety: string
+  alcohol: string
   clarity: 'Clear' | 'Hazy' | ''
   appearance_intensity: 'Pale' | 'Medium' | 'Deep' | ''
   color: string
@@ -106,6 +111,9 @@ export function toTastingPayload(formData: TastingFormData) {
     vintage: formData.vintage ? parseInt(formData.vintage) : null,
     producer: formData.producer || null,
     region: formData.region || null,
+    country: formData.country || null,
+    grape_variety: formData.grape_variety || null,
+    alcohol: formData.alcohol ? parseFloat(formData.alcohol) : null,
     clarity: formData.clarity || null,
     appearance_intensity: formData.appearance_intensity || null,
     color: formData.color || null,
@@ -127,6 +135,9 @@ const DEFAULT_FORM_DATA: TastingFormData = {
   vintage: '',
   producer: '',
   region: '',
+  country: '',
+  grape_variety: '',
+  alcohol: '',
   clarity: '',
   appearance_intensity: '',
   color: '',
@@ -143,18 +154,55 @@ const DEFAULT_FORM_DATA: TastingFormData = {
 
 type TastingFormProps = {
   initialData?: TastingFormData
-  onSubmit: (data: TastingFormData) => Promise<void>
+  /**
+   * `labelImage` is a newly captured photo; `labelCleared` means the taster
+   * removed the photo that was already on this tasting. The two are distinct:
+   * no new file with nothing cleared means "leave the existing label alone".
+   */
+  onSubmit: (
+    data: TastingFormData,
+    labelImage: File | null,
+    labelCleared: boolean
+  ) => Promise<void>
   submitLabel: string
   loadingLabel: string
   error: string | null
+  /** An already-saved label photo, when editing. */
+  existingImageUrl?: string | null
 }
 
-export default function TastingForm({ initialData, onSubmit, submitLabel, loadingLabel, error }: TastingFormProps) {
+export default function TastingForm({
+  initialData,
+  onSubmit,
+  submitLabel,
+  loadingLabel,
+  error,
+  existingImageUrl,
+}: TastingFormProps) {
   const [loading, setLoading] = useState(false)
   const [openCategory, setOpenCategory] = useState<string | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
+  const [labelImage, setLabelImage] = useState<File | null>(null)
+  const [labelCleared, setLabelCleared] = useState(false)
 
   const [formData, setFormData] = useState<TastingFormData>(initialData ?? DEFAULT_FORM_DATA)
+
+  // Prefill from a label photo. Only empty fields are written, so a value the
+  // taster already typed is never overwritten by the reader.
+  const applyExtracted = (fields: ExtractedLabel) => {
+    setFormData((prev) => ({
+      ...prev,
+      wine_name: prev.wine_name || fields.wine_name || '',
+      producer: prev.producer || fields.producer || '',
+      vintage: prev.vintage || (fields.vintage != null ? String(fields.vintage) : ''),
+      region: prev.region || fields.region || '',
+      country: prev.country || fields.country || '',
+      grape_variety: prev.grape_variety || fields.grape_variety || '',
+      alcohol: prev.alcohol || (fields.alcohol != null ? String(fields.alcohol) : ''),
+      // Setting wine_type also reveals the tasting section, which is gated on it.
+      wine_type: prev.wine_type || fields.wine_type || '',
+    }))
+  }
 
   useEffect(() => {
     if (!openCategory) return
@@ -172,7 +220,7 @@ export default function TastingForm({ initialData, onSubmit, submitLabel, loadin
     e.preventDefault()
     setLoading(true)
     try {
-      await onSubmit(formData)
+      await onSubmit(formData, labelImage, labelCleared)
     } finally {
       setLoading(false)
     }
@@ -288,6 +336,15 @@ export default function TastingForm({ initialData, onSubmit, submitLabel, loadin
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <LabelCapture
+          onExtracted={applyExtracted}
+          onImageChange={(file) => {
+            setLabelImage(file)
+            if (file === null) setLabelCleared(true)
+          }}
+          existingImageUrl={existingImageUrl}
+        />
+
         {/* ── Wine Identity ── */}
         <SectionHeading>Wine Identity</SectionHeading>
 
@@ -342,18 +399,65 @@ export default function TastingForm({ initialData, onSubmit, submitLabel, loadin
           </div>
         </div>
 
-        <div>
-          <label htmlFor="region" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-            Region
-          </label>
-          <input
-            type="text"
-            id="region"
-            value={formData.region}
-            onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-            placeholder="e.g. Barossa Valley, Burgundy"
-            className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="region" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+              Region
+            </label>
+            <input
+              type="text"
+              id="region"
+              value={formData.region}
+              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+              placeholder="e.g. Barossa Valley, Burgundy"
+              className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label htmlFor="country" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+              Country
+            </label>
+            <input
+              type="text"
+              id="country"
+              value={formData.country}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+              placeholder="e.g. France"
+              className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2">
+            <label htmlFor="grape_variety" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+              Grape Variety
+            </label>
+            <input
+              type="text"
+              id="grape_variety"
+              value={formData.grape_variety}
+              onChange={(e) => setFormData({ ...formData, grape_variety: e.target.value })}
+              placeholder="e.g. Chardonnay, or Syrah, Grenache"
+              className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label htmlFor="alcohol" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+              Alcohol %
+            </label>
+            <input
+              type="number"
+              id="alcohol"
+              value={formData.alcohol}
+              onChange={(e) => setFormData({ ...formData, alcohol: e.target.value })}
+              placeholder="13.5"
+              step="0.1"
+              min="0"
+              max="25"
+              className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
+            />
+          </div>
         </div>
 
         {!formData.wine_type ? (

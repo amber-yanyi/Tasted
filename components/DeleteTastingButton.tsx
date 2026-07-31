@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { deleteLabelImage } from '@/lib/labelStorage'
 
 export default function DeleteTastingButton({ id }: { id: string }) {
   const router = useRouter()
@@ -28,6 +29,14 @@ export default function DeleteTastingButton({ id }: { id: string }) {
       return
     }
 
+    // Read the label path before the row goes, or the file is orphaned.
+    const { data: existing } = await supabase
+      .from('tastings')
+      .select('label_image_url')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
     const { error: supabaseError } = await supabase
       .from('tastings')
       .delete()
@@ -38,6 +47,10 @@ export default function DeleteTastingButton({ id }: { id: string }) {
       setError(supabaseError.message)
       setDeleting(false)
       return
+    }
+
+    if (existing?.label_image_url) {
+      await deleteLabelImage(supabase, existing.label_image_url)
     }
 
     router.push('/tastings')

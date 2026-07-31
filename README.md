@@ -25,6 +25,10 @@ A simple, minimal website for logging wines and WSET Level 2 tasting notes.
      vintage integer,
      producer text,
      region text,
+     country text,
+     grape_variety text,
+     alcohol numeric(4, 1),
+     label_image_url text,
      clarity text,
      appearance_intensity text,
      color text,
@@ -41,6 +45,8 @@ A simple, minimal website for logging wines and WSET Level 2 tasting notes.
 
    create index tastings_user_id_created_at_idx
      on tastings (user_id, created_at desc);
+   create index tastings_user_country_idx on tastings (user_id, country);
+   create index tastings_user_grape_idx on tastings (user_id, grape_variety);
    ```
 
 4. Enable Row Level Security so users can only reach their own rows:
@@ -69,13 +75,37 @@ A simple, minimal website for logging wines and WSET Level 2 tasting notes.
    public anon key, so these policies are the only thing isolating one user's
    tastings from another's.
 
-5. (Optional) Enable Google sign-in:
+5. Create the label-photo bucket and its policies. The SQL is in
+   `supabase/migrations/002_label_capture.sql` — paste it into the SQL editor.
+   It creates a **private** `labels` bucket (a tasting note is personal, and a
+   public bucket would make every label readable by URL) plus the four storage
+   policies that scope each user to their own folder. Without them, uploads
+   fail with a 403.
+
+6. Set up label recognition:
+   - Get a free Gemini API key at
+     [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+   - Add it to `.env.local` as `GEMINI_API_KEY`.
+
+   The key is read only in `app/api/extract-label/route.ts`, server-side — it is
+   deliberately not `NEXT_PUBLIC_`, so it never reaches the browser. Without a
+   key the app still works; the photo step reports that recognition is not
+   configured and everything can be typed by hand.
+
+7. (Optional) Enable Google sign-in:
    - In the Supabase dashboard, go to **Authentication → Providers → Google**
      and add your Google OAuth client ID and secret.
    - Add `http://localhost:3000/auth/callback` (and your production equivalent)
      to the provider's allowed redirect URLs.
 
    Email/password sign-in works without this step.
+
+8. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+9. Open [http://localhost:3000](http://localhost:3000)
 
 ### Migrations
 
@@ -102,19 +132,25 @@ alter table tastings alter column user_id set not null;
 
 -- adds the sparkling-wine mousse field
 alter table tastings add column mousse text;
+
+-- adds the label-capture fields (then run supabase/migrations/002_label_capture.sql
+-- for the storage bucket and its policies)
+alter table tastings
+  add column country text,
+  add column grape_variety text,
+  add column alcohol numeric(4, 1),
+  add column label_image_url text;
 ```
-
-6. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-7. Open [http://localhost:3000](http://localhost:3000)
 
 ## Features
 
+- Photograph a wine label to fill in its details automatically — including the
+  ones the label leaves out. Old World labels often print nothing but an estate
+  and an appellation; a Puligny-Montrachet still logs its grape as Chardonnay.
+  The photo is kept with the tasting.
 - WSET Level 2 Systematic Approach to Tasting (SAT) form
-- Wine identity fields: name, type, vintage, producer, region
+- Wine identity fields: name, type, vintage, producer, region, country, grape
+  variety, alcohol
 - Appearance assessment: clarity, intensity, color (conditional on wine type)
 - Nose & palate: sweetness, acidity, tannin (red only), body, mousse
   (sparkling only), finish
@@ -133,4 +169,5 @@ alter table tastings add column mousse text;
 - Next.js 15 (App Router)
 - TypeScript
 - Tailwind CSS
-- Supabase (auth + Postgres)
+- Supabase (auth + Postgres + Storage)
+- Gemini Flash-Lite for label recognition
