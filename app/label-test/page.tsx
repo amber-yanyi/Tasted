@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { ExtractedLabel } from '@/lib/labelExtraction'
+import type { ExtractedLabel, FieldSource } from '@/lib/labelExtraction'
 
 // Throwaway harness for checking recognition accuracy against real bottles.
 // Not linked from anywhere in the app; delete it once the flow moves into
@@ -32,6 +32,10 @@ const OUTPUT_COST_PER_TOKEN = 1.5 / 1_000_000
 export default function LabelTest() {
   const [preview, setPreview] = useState<string | null>(null)
   const [fields, setFields] = useState<ExtractedLabel | null>(null)
+  const [sources, setSources] = useState<Partial<
+    Record<keyof ExtractedLabel, FieldSource>
+  > | null>(null)
+  const [searched, setSearched] = useState(false)
   const [usage, setUsage] = useState<Usage | null>(null)
   const [model, setModel] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState<number | null>(null)
@@ -42,6 +46,8 @@ export default function LabelTest() {
     setLoading(true)
     setError(null)
     setFields(null)
+    setSources(null)
+    setSearched(false)
     setUsage(null)
     setElapsed(null)
     setPreview(URL.createObjectURL(file))
@@ -59,6 +65,8 @@ export default function LabelTest() {
       }
 
       setFields(data.fields)
+      setSources(data.field_sources ?? null)
+      setSearched(Boolean(data.searched))
       setUsage(data.usage ?? null)
       setModel(data.model ?? null)
       setElapsed(Math.round(performance.now() - started))
@@ -161,12 +169,24 @@ export default function LabelTest() {
                       ? `${fields[key]}%`
                       : String(fields[key])}
                 </dd>
+                {fields[key] !== null && sources?.[key] === 'inferred' && (
+                  <span className="ml-3 shrink-0 self-center inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200">
+                    inferred
+                  </span>
+                )}
               </div>
             ))}
           </dl>
 
+          <p className="text-xs text-stone-500 dark:text-stone-500 mb-4">
+            Unmarked values were read off the label. &ldquo;Inferred&rdquo; means the
+            label did not print it and the model supplied it — worth a glance
+            before saving.
+          </p>
+
           <div className="text-xs text-stone-500 dark:text-stone-500 space-y-1">
             {model && <p>Model: {model}</p>}
+            <p>Web search: {searched ? 'used' : 'not needed'}</p>
             {elapsed !== null && <p>Round trip: {(elapsed / 1000).toFixed(1)}s</p>}
             {usage?.totalTokenCount != null && (
               <p>

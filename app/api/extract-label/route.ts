@@ -5,6 +5,7 @@ import {
   LABEL_RESPONSE_SCHEMA,
   EXTRACTED_LABEL_FIELDS,
   type ExtractedLabel,
+  type FieldSource,
 } from '@/lib/labelExtraction'
 
 // The Gemini key lives only here, server-side. The browser posts an image and
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
 
   let text: string | undefined
   let usage: unknown
+  let searched = false
   try {
     const ai = new GoogleGenAI({ apiKey })
     const response = await ai.models.generateContent({
@@ -68,12 +70,18 @@ export async function POST(request: Request) {
         },
       ],
       config: {
+        // Search lets the model look up a specific producer or cuvée it does
+        // not already know. It is not used for well-known appellations — those
+        // it answers from its own knowledge, at no extra latency.
+        tools: [{ googleSearch: {} }],
         responseMimeType: 'application/json',
         responseSchema: LABEL_RESPONSE_SCHEMA as object,
       },
     })
     text = response.text
     usage = response.usageMetadata
+    searched =
+      (response.candidates?.[0]?.groundingMetadata?.webSearchQueries?.length ?? 0) > 0
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
@@ -127,5 +135,61 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ fields, model, usage })
+  // Provenance, so the UI can distinguish "read off the glass" from "we filled
+  // this in for you". Derived in code by matching each value against the
+  // model's verbatim transcription rather than asking the model to classify its
+  // own fields — Flash-Lite is reliable at transcribing and at inferring, but
+  // not at that kind of self-attribution, and it tended to mark plainly
+  // printed values as inferred.
+  const labelText = typeof raw.label_text === 'string' ? raw.label_text : ''
+  const sources: Partial<Record<keyof ExtractedLabel, FieldSource>> = {}
+  for (const key of EXTRACTED_LABEL_FIELDS) {
+    const value = fields[key]
+    if (value === null) continue
+    // vintage and alcohol are never inferred (see the prompt), so whatever
+    // survived validation came off the label.
+    sources[key] =
+      key === 'vintage' || key === 'alcohol'
+        ? 'label'
+        : appearsOnLabel(String(value), labelText)
+          ? 'label'
+          : 'inferred'
+  }
+
+  return NextResponse.json({
+    fields,
+    field_sources: sources,
+    label_text: labelText || null,
+    model,
+    usage,
+    searched,
+  })
+}
+
+/** Strip accents, punctuation, and case so "Château" matches "CHATEAU". */
+function normalizeForMatch(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+/**
+ * Whether a field value is visible on the label.
+ *
+ * A comma-separated value counts as printed only if every part is — a blend
+ * where the label named one grape and the model added the rest is inferred, and
+ * flagging it for review is the useful answer.
+ */
+function appearsOnLabel(value: string, labelText: string): boolean {
+  if (!labelText) return false
+  const haystack = normalizeForMatch(labelText)
+  const parts = value
+    .split(',')
+    .map((p) => normalizeForMatch(p))
+    .filter(Boolean)
+  if (parts.length === 0) return false
+  return parts.every((part) => haystack.includes(part))
 }
