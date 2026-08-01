@@ -16,14 +16,16 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', '
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    // This also fires when the key *is* in .env.local but the dev server was
-    // started before it was added — Next reads env at boot, so the message
-    // mentions restarting rather than sending you to re-add a key you already
-    // have.
+    // Next reads env at boot, so a key added while the server is running looks
+    // missing until a restart — and .env.local is gitignored, so a deployment
+    // needs the key set in the host's own environment. The advice differs, so
+    // the message does too rather than sending a deploy to edit a local file.
+    const isLocal = process.env.NODE_ENV === 'development'
     return NextResponse.json(
       {
-        error:
-          'Label recognition is not configured. Add GEMINI_API_KEY to .env.local, then restart the dev server — env vars are read at startup.',
+        error: isLocal
+          ? 'Label recognition is not configured. Add GEMINI_API_KEY to .env.local, then restart the dev server — env vars are read at startup.'
+          : 'Label recognition is not configured on this deployment. Add GEMINI_API_KEY to the hosting environment variables and redeploy.',
       },
       { status: 503 }
     )
