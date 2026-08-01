@@ -16,8 +16,15 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', '
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
+    // This also fires when the key *is* in .env.local but the dev server was
+    // started before it was added — Next reads env at boot, so the message
+    // mentions restarting rather than sending you to re-add a key you already
+    // have.
     return NextResponse.json(
-      { error: 'Label recognition is not configured. Set GEMINI_API_KEY in .env.local.' },
+      {
+        error:
+          'Label recognition is not configured. Add GEMINI_API_KEY to .env.local, then restart the dev server — env vars are read at startup.',
+      },
       { status: 503 }
     )
   }
