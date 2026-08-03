@@ -27,7 +27,7 @@ export const STRINGS = {
     en: 'Remember every bottle you taste.',
   },
   getStarted: { zh: '开始记录', en: 'Get Started' },
-  viewTastings: { zh: '查看笔记', en: 'View Tastings' },
+  viewTastings: { zh: '我的酒单', en: 'View Tastings' },
   featureLabelTitle: { zh: '拍下酒标', en: 'Photograph the label' },
   featureLabelBody: {
     zh: '酒名、酒庄、年份、产区、葡萄品种自动填好 —— 连酒标上没印的也一样。',
