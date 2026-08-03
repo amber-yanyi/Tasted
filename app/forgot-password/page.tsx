@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { createRecoveryClient } from '@/lib/supabase/recoveryClient'
 import { useLocale } from '@/lib/i18n/LocaleProvider'
 
 export default function ForgotPasswordPage() {
@@ -17,10 +17,12 @@ export default function ForgotPasswordPage() {
     setError('')
     setLoading(true)
 
-    const supabase = createClient()
+    // Not the app's SSR client: that one runs PKCE, which would tie the link to
+    // this browser. See lib/supabase/recoveryClient.ts.
+    const supabase = createRecoveryClient()
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      // The link lands on the shared callback, which exchanges the code for a
-      // session and forwards to the page where the new password is set.
+      // The link lands on the shared callback, which verifies the token and
+      // forwards to the page where the new password is set.
       redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
     })
 

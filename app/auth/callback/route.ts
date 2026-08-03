@@ -29,9 +29,11 @@ export async function GET(request: Request) {
     }
   }
 
-  // A recovery link that failed should land on the reset page, which explains
-  // that the link expired and offers a new one — more useful than a silent
-  // return to the login form.
+  // With the implicit flow, Supabase can redirect straight here with the tokens
+  // in the URL fragment. Fragments never reach the server, so there is nothing
+  // to verify at this point — hand off to /reset-password, which reads the
+  // fragment client-side. That page also renders the expired-link message, so
+  // this is the right destination whether the link was good or not.
   if (type === 'recovery' || next === '/reset-password') {
     return NextResponse.redirect(`${origin}/reset-password`)
   }

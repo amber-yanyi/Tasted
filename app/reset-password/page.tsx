@@ -22,15 +22,40 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
 
-  // A recovery link that has expired or been used already yields no session.
-  // Checking up front means the user is told to request a new link, rather than
-  // filling in a form that cannot succeed.
+  // Two ways a valid recovery can arrive here:
+  //
+  //  - The callback already verified a token_hash and set session cookies.
+  //  - Supabase redirected with the tokens in the URL fragment. A fragment is
+  //    never sent to the server, so only this component can act on it — without
+  //    this branch such a link would look expired even though it is fine.
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getSession().then(({ data }) => {
+
+    async function establishSession() {
+      const hash = window.location.hash
+      if (hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.slice(1))
+        const access_token = params.get('access_token')
+        const refresh_token = params.get('refresh_token')
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token })
+          // Clear the fragment so the tokens are not left in history or copied
+          // out of the address bar.
+          window.history.replaceState(null, '', window.location.pathname)
+          if (!error) {
+            setHasSession(true)
+            setChecking(false)
+            return
+          }
+        }
+      }
+
+      const { data } = await supabase.auth.getSession()
       setHasSession(Boolean(data.session))
       setChecking(false)
-    })
+    }
+
+    establishSession()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
