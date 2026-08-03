@@ -38,7 +38,9 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#1c1917",
+  // Must match manifest.json's theme_color, or the browser chrome and the
+  // installed app's status bar disagree.
+  themeColor: "#6B2233",
 };
 
 export default function RootLayout({
@@ -49,7 +51,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={crimson.variable}>
       <head>
-        <link rel="apple-touch-icon" href="/icon.svg" />
+        {/* Safari's support for an SVG apple-touch-icon is unreliable; a 180x180
+            PNG is what it consistently uses for the home-screen icon. */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
       <body className="antialiased min-h-screen flex flex-col">
         <Header />

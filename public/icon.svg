@@ -1,14 +1,17 @@
+<!-- Square with no rounding: iOS and Android mask icons to their own shape, and a
+     pre-rounded source gets clipped again into a smaller, lopsided corner. -->
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" fill="#7c3aed" rx="64"/>
+  <rect width="512" height="512" fill="#6B2233"/>
+  <!-- Absolute coordinates and `central`, not 50%/`middle`: percentage units and
+       `middle` are resolved inconsistently by rasterizers, which pushed the
+       glyph off-centre. -->
   <text
-    x="50%"
-    y="50%"
-    dominant-baseline="middle"
+    x="256"
+    y="256"
+    dominant-baseline="central"
     text-anchor="middle"
-    font-family="serif"
-    font-size="320"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="300"
     font-weight="600"
-    fill="white">
-    T
-  </text>
+    fill="#F5F1E8">T</text>
 </svg>
