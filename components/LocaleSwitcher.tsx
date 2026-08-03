@@ -3,44 +3,27 @@
 import { useLocale } from '@/lib/i18n/LocaleProvider'
 
 /**
- * 中 / EN toggle.
+ * Shows only the language you would switch *to*.
  *
- * Deliberately plain text rather than a dropdown: with two languages a select is
- * more clicks for the same outcome, and the labels are self-describing in the
- * language they switch to.
+ * A 中 / EN pair put a slash right next to the header's own border-l divider,
+ * which read as two competing vertical rules. Naming just the target also makes
+ * the affordance obvious: you can see the current language in the interface
+ * around it, so the button only needs to say where it goes.
  */
 export default function LocaleSwitcher() {
   const { locale, setLocale } = useLocale()
+  const target = locale === 'zh' ? 'en' : 'zh'
 
   return (
-    <div className="flex items-center gap-1 text-xs">
-      <button
-        type="button"
-        onClick={() => setLocale('zh')}
-        aria-current={locale === 'zh' ? 'true' : undefined}
-        className={
-          locale === 'zh'
-            ? 'font-medium text-stone-900 dark:text-stone-100'
-            : 'text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 transition-colors'
-        }
-      >
-        中
-      </button>
-      <span className="text-stone-300 dark:text-stone-700" aria-hidden="true">
-        /
-      </span>
-      <button
-        type="button"
-        onClick={() => setLocale('en')}
-        aria-current={locale === 'en' ? 'true' : undefined}
-        className={
-          locale === 'en'
-            ? 'font-medium text-stone-900 dark:text-stone-100'
-            : 'text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 transition-colors'
-        }
-      >
-        EN
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={() => setLocale(target)}
+      // The label is in the target language, so it reads correctly to someone
+      // who only speaks that one.
+      aria-label={target === 'en' ? 'Switch to English' : '切换为中文'}
+      className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+    >
+      {target === 'en' ? 'EN' : '中文'}
+    </button>
   )
 }

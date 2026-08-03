@@ -168,6 +168,8 @@ export default function LabelCapture({
           </p>
           <p className="text-sm text-stone-500 dark:text-stone-500 mt-1 mb-4">
             {t('captureHint')}
+            <br />
+            {t('captureHintSkip')}
           </p>
           <label className="inline-block px-6 py-2 bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 rounded-md hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors font-medium text-sm cursor-pointer">
             {reading ? t('captureReading') : t('captureButton')}

@@ -14,7 +14,7 @@ import type { Locale } from './locale'
 export const STRINGS = {
   // ── Chrome ──
   addTasting: { zh: '记一笔', en: 'Add Tasting' },
-  tastings: { zh: '品酒笔记', en: 'Tastings' },
+  tastings: { zh: '我的酒单', en: 'Tastings' },
   logIn: { zh: '登录', en: 'Log In' },
   signUp: { zh: '注册', en: 'Sign Up' },
   logOut: { zh: '退出', en: 'Log Out' },
@@ -22,9 +22,9 @@ export const STRINGS = {
 
   // ── Landing ──
   landingLede: {
-    // Kept in English: the slogan carries the brand voice.
-    zh: 'A wine you finish and forget is a wine you never really tasted. Keep the note, and your palate becomes something you can look back on.',
-    en: 'A wine you finish and forget is a wine you never really tasted. Keep the note, and your palate becomes something you can look back on.',
+    // Kept in English in both locales: it is the brand line, not body copy.
+    zh: 'Remember every bottle you taste.',
+    en: 'Remember every bottle you taste.',
   },
   getStarted: { zh: '开始记录', en: 'Get Started' },
   viewTastings: { zh: '查看笔记', en: 'View Tastings' },
@@ -63,8 +63,12 @@ export const STRINGS = {
   // ── Label capture ──
   captureTitle: { zh: '拍下酒标', en: 'Photograph the label' },
   captureHint: {
-    zh: '我们会填好酒名、酒庄、年份和产区。可跳过 —— 也可以全部手填。',
-    en: "We'll fill in the wine, producer, vintage, and region. Optional — you can type everything by hand instead.",
+    zh: '自动识别酒名、酒庄、年份和产区。',
+    en: 'The wine, producer, vintage, and region fill themselves in.',
+  },
+  captureHintSkip: {
+    zh: '也可以跳过，直接手动填写。',
+    en: 'Or skip it and type them in yourself.',
   },
   captureButton: { zh: '拍照或选择照片', en: 'Take or choose a photo' },
   captureReading: { zh: '识别中…', en: 'Reading…' },
@@ -125,9 +129,9 @@ export const STRINGS = {
   updating: { zh: '更新中…', en: 'Updating...' },
 
   // ── List & detail ──
-  noTastingsYet: { zh: '还没有笔记。', en: 'No tastings yet.' },
+  noTastingsYet: { zh: '酒单还是空的。', en: 'No tastings yet.' },
   addFirstTasting: { zh: '记下第一瓶酒', en: 'Add your first tasting' },
-  backToTastings: { zh: '返回笔记列表', en: 'Back to Tastings' },
+  backToTastings: { zh: '返回我的酒单', en: 'Back to Tastings' },
   backToTasting: { zh: '返回这条笔记', en: 'Back to Tasting' },
   edit: { zh: '编辑', en: 'Edit' },
   delete: { zh: '删除', en: 'Delete' },
@@ -135,14 +139,14 @@ export const STRINGS = {
   labelHeading: { zh: '酒标', en: 'Label' },
   notesHeading: { zh: '备注', en: 'Notes' },
   editTastingTitle: { zh: '编辑笔记', en: 'Edit Tasting' },
-  addTastingTitle: { zh: '记一笔', en: 'Add Tasting' },
+  addTastingTitle: { zh: '记一瓶酒', en: 'Add Tasting' },
   tastingNotFound: { zh: '找不到这条笔记。', en: 'Tasting not found.' },
   confirmDelete: {
     zh: '确定要删除这条笔记吗？此操作无法撤销。',
     en: 'Are you sure you want to delete this tasting? This cannot be undone.',
   },
   mustBeLoggedIn: { zh: '需要先登录。', en: 'You must be logged in' },
-  errorLoading: { zh: '加载笔记出错：', en: 'Error loading tastings: ' },
+  errorLoading: { zh: '加载酒单出错：', en: 'Error loading tastings: ' },
   labelUploadFailed: {
     zh: '酒标上传失败，笔记将不带照片保存。',
     en: 'Could not upload the label photo. Saving the tasting without it.',

@@ -15,7 +15,9 @@ export default async function Home() {
         <h1 className="font-serif text-6xl md:text-7xl font-semibold text-stone-900 dark:text-stone-100">
           Tasted
         </h1>
-        <p className="text-xl text-stone-600 dark:text-stone-400 max-w-2xl mx-auto text-balance">
+        {/* One short line: no width clamp or text-balance needed, and it can
+            carry a slightly larger size than a paragraph would. */}
+        <p className="text-xl sm:text-2xl text-stone-600 dark:text-stone-400">
           {t('landingLede')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
