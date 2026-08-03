@@ -14,7 +14,8 @@ export default async function Home() {
           Tasted
         </h1>
         <p className="text-xl text-stone-600 dark:text-stone-400 max-w-2xl mx-auto text-balance">
-          Remember every glass. A wine journal built on WSET tasting logic.
+          A wine you finish and forget is a wine you never really tasted. Keep the
+          note, and your palate becomes something you can look back on.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
           {user ? (
@@ -54,26 +55,29 @@ export default async function Home() {
       <div className="hidden sm:grid mt-24 grid-cols-3 gap-8 text-center">
         <div className="space-y-2">
           <h3 className="font-serif text-lg font-semibold text-stone-900 dark:text-stone-100">
-            Structured SAT Notes
+            Photograph the label
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-            Guided tasting form based on the WSET Systematic Approach. No more blank-page anxiety.
+            The wine, producer, vintage, region, and grape fill themselves in — even
+            the ones the label never prints.
           </p>
         </div>
         <div className="space-y-2">
           <h3 className="font-serif text-lg font-semibold text-stone-900 dark:text-stone-100">
-            Track What You Love
+            Taste in your own words
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-            Build a personal library of every wine you taste. Searchable, sortable, always with you.
+            A structured form for what you actually smelled and tasted, so a note
+            written tonight still means something a year from now.
           </p>
         </div>
         <div className="space-y-2">
           <h3 className="font-serif text-lg font-semibold text-stone-900 dark:text-stone-100">
-            Works Offline
+            Keep it on your phone
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-            Install it on your phone. Log tastings at the cellar door, even without signal.
+            Add it to your home screen and it opens like an app — at the table, at
+            the bar, wherever the bottle is.
           </p>
         </div>
       </div>

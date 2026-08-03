@@ -49,7 +49,7 @@ export default async function Header() {
               </Link>
               <Link
                 href="/signup"
-                className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="text-sm bg-wine-700 hover:bg-wine-800 text-stone-50 px-4 py-2 rounded-md transition-colors"
               >
                 Sign Up
               </Link>
