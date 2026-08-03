@@ -60,6 +60,34 @@ export const STRINGS = {
     en: 'Check your email for a confirmation link.',
   },
 
+  // ── Password reset ──
+  forgotPassword: { zh: '忘记密码？', en: 'Forgot password?' },
+  resetPasswordTitle: { zh: '重置密码', en: 'Reset password' },
+  resetPasswordHint: {
+    zh: '输入注册时用的邮箱，我们会发一封重置链接给你。',
+    en: "Enter the email you signed up with and we'll send you a reset link.",
+  },
+  sendResetLink: { zh: '发送重置链接', en: 'Send reset link' },
+  sendingResetLink: { zh: '发送中…', en: 'Sending...' },
+  resetLinkSent: {
+    zh: '如果这个邮箱注册过，重置链接已经发出。请查看收件箱，也看一下垃圾邮件。',
+    en: "If that email has an account, a reset link is on its way. Check your inbox, and your spam folder too.",
+  },
+  backToLogin: { zh: '返回登录', en: 'Back to log in' },
+  newPasswordTitle: { zh: '设置新密码', en: 'Set a new password' },
+  newPassword: { zh: '新密码', en: 'New password' },
+  confirmPassword: { zh: '再输一次', en: 'Confirm password' },
+  updatePassword: { zh: '更新密码', en: 'Update password' },
+  updatingPassword: { zh: '更新中…', en: 'Updating...' },
+  passwordsDoNotMatch: { zh: '两次输入的密码不一致。', en: 'The passwords do not match.' },
+  passwordTooShort: { zh: '密码至少 6 位。', en: 'Password must be at least 6 characters.' },
+  passwordUpdated: { zh: '密码已更新，正在进入…', en: 'Password updated. Taking you in...' },
+  resetLinkInvalid: {
+    zh: '这个重置链接无效或已过期。请重新申请一次。',
+    en: 'That reset link is invalid or has expired. Request a new one.',
+  },
+  requestNewLink: { zh: '重新申请', en: 'Request a new link' },
+
   // ── Label capture ──
   captureTitle: { zh: '拍下酒标', en: 'Photograph the label' },
   captureHint: {

@@ -10,7 +10,13 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   )
 
-  // Auth routes that logged-in users shouldn't access
+  // Auth routes that logged-in users shouldn't access.
+  //
+  // /reset-password is deliberately absent: a recovery link signs the user in
+  // before they reach it, so treating it as an auth route would bounce them to
+  // the home page with the password still unchanged. /forgot-password is absent
+  // for the same reason — someone logged in on one device may still want to
+  // reset a password they have forgotten.
   const authRoutes = ['/login', '/signup']
   const isAuthRoute = authRoutes.includes(request.nextUrl.pathname)
 

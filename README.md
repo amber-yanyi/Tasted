@@ -92,7 +92,14 @@ A simple, minimal website for logging wines and WSET Level 2 tasting notes.
    key the app still works; the photo step reports that recognition is not
    configured and everything can be typed by hand.
 
-7. (Optional) Enable Google sign-in:
+7. Configure the auth redirect URLs. In the Supabase dashboard under
+   **Authentication → URL Configuration**, add your deployed origin's
+   `/auth/callback` to the redirect allow-list (e.g.
+   `https://your-app.vercel.app/auth/callback`), alongside
+   `http://localhost:3000/auth/callback`. Password-reset links are rejected if
+   their redirect target is not on this list.
+
+8. (Optional) Enable Google sign-in:
    - In the Supabase dashboard, go to **Authentication → Providers → Google**
      and add your Google OAuth client ID and secret.
    - Add `http://localhost:3000/auth/callback` (and your production equivalent)
@@ -100,12 +107,12 @@ A simple, minimal website for logging wines and WSET Level 2 tasting notes.
 
    Email/password sign-in works without this step.
 
-8. Run the development server:
+9. Run the development server:
    ```bash
    npm run dev
    ```
 
-9. Open [http://localhost:3000](http://localhost:3000)
+10. Open [http://localhost:3000](http://localhost:3000)
 
 ### Migrations
 
@@ -141,6 +148,19 @@ alter table tastings
   add column alcohol numeric(4, 1),
   add column label_image_url text;
 ```
+
+## Accounts
+
+Signing up takes an email and a password and logs you straight in — there is no
+confirmation email to wait for. Google sign-in is offered alongside it.
+
+Forgotten passwords are recovered by email (`/forgot-password`), which is the
+only recovery route Supabase offers. That has one consequence worth knowing: an
+account created with a mistyped address can never be recovered, because the
+reset link goes to a mailbox its owner does not read. Verifying addresses at
+signup would close that gap, at the cost of a confirmation step on every signup
+and against a built-in mail limit of two messages an hour. For a small invited
+group the trade currently favours the faster signup.
 
 ## Features
 
