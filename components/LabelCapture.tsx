@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { compressImage } from '@/lib/compressImage'
 import type { ExtractedLabel } from '@/lib/labelExtraction'
+import { useLocale } from '@/lib/i18n/LocaleProvider'
 
 type LabelCaptureProps = {
   /** Fields read or inferred from the photo, for the form to prefill. */
@@ -21,6 +22,7 @@ export default function LabelCapture({
   onImageChange,
   existingImageUrl,
 }: LabelCaptureProps) {
+  const { t } = useLocale()
   const [preview, setPreview] = useState<string | null>(existingImageUrl ?? null)
   const [status, setStatus] = useState<'idle' | 'reading' | 'done' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
@@ -74,7 +76,7 @@ export default function LabelCapture({
       setFilledCount(count)
 
       if (count === 0) {
-        setError('Nothing readable on that photo. Try again, or fill the details in below.')
+        setError(t('captureNothingRead'))
         setStatus('error')
         return
       }
@@ -82,7 +84,7 @@ export default function LabelCapture({
       onExtracted(fields)
       setStatus('done')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not reach the label reader.')
+      setError(err instanceof Error ? err.message : t('captureUnreachable'))
       setStatus('error')
     }
   }
@@ -114,13 +116,14 @@ export default function LabelCapture({
           <div className="flex-1 min-w-0">
             {reading && (
               <p className="text-sm text-stone-600 dark:text-stone-400">
-                Reading the label&hellip;
+                {t('captureReadingLabel')}
               </p>
             )}
             {status === 'done' && (
               <p className="text-sm text-stone-700 dark:text-stone-300">
-                Filled in {filledCount} {filledCount === 1 ? 'detail' : 'details'} below.
-                Edit anything that looks off.
+                {filledCount === 1
+                  ? t('captureFilledOne')
+                  : t('captureFilledMany', { n: filledCount })}
               </p>
             )}
             {status === 'error' && error && (
@@ -128,12 +131,12 @@ export default function LabelCapture({
             )}
             {status === 'idle' && (
               <p className="text-sm text-stone-600 dark:text-stone-400">
-                Label saved with this tasting.
+                {t('captureSaved')}
               </p>
             )}
             <div className="mt-3 flex flex-wrap gap-3">
               <label className="text-sm font-medium text-stone-700 dark:text-stone-300 underline cursor-pointer hover:text-stone-900 dark:hover:text-stone-100">
-                Replace photo
+                {t('captureReplace')}
                 <input
                   type="file"
                   accept="image/*"
@@ -153,7 +156,7 @@ export default function LabelCapture({
                 disabled={reading}
                 className="text-sm text-stone-500 dark:text-stone-500 underline hover:text-stone-700 dark:hover:text-stone-300 disabled:opacity-50"
               >
-                Remove
+                {t('captureRemove')}
               </button>
             </div>
           </div>
@@ -161,14 +164,13 @@ export default function LabelCapture({
       ) : (
         <div className="text-center">
           <p className="font-serif text-lg text-stone-700 dark:text-stone-300">
-            Photograph the label
+            {t('captureTitle')}
           </p>
           <p className="text-sm text-stone-500 dark:text-stone-500 mt-1 mb-4">
-            We&apos;ll fill in the wine, producer, vintage, and region. Optional —
-            you can type everything by hand instead.
+            {t('captureHint')}
           </p>
           <label className="inline-block px-6 py-2 bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 rounded-md hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors font-medium text-sm cursor-pointer">
-            {reading ? 'Reading…' : 'Take or choose a photo'}
+            {reading ? t('captureReading') : t('captureButton')}
             <input
               type="file"
               accept="image/*"

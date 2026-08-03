@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Crimson_Text } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
+import { getLocale } from "@/lib/i18n/server";
 
 const crimson = Crimson_Text({
   weight: ['400', '600'],
@@ -43,23 +45,27 @@ export const viewport = {
   themeColor: "#6B2233",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" className={crimson.variable}>
+    <html lang={locale === 'zh' ? 'zh-CN' : 'en'} className={crimson.variable}>
       <head>
         {/* Safari's support for an SVG apple-touch-icon is unreliable; a 180x180
             PNG is what it consistently uses for the home-screen icon. */}
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
       <body className="antialiased min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
+        <LocaleProvider initialLocale={locale}>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+        </LocaleProvider>
       </body>
     </html>
   );

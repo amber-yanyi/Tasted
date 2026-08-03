@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import LabelCapture from './LabelCapture'
 import type { ExtractedLabel } from '@/lib/labelExtraction'
+import { useLocale } from '@/lib/i18n/LocaleProvider'
+import { term, type ScaleName } from '@/lib/i18n/wineTerms'
 
 const COLOR_OPTIONS: Record<string, string[]> = {
   Red: ['Purple', 'Ruby', 'Garnet', 'Tawny'],
@@ -179,6 +181,7 @@ export default function TastingForm({
   error,
   existingImageUrl,
 }: TastingFormProps) {
+  const { locale, t } = useLocale()
   const [loading, setLoading] = useState(false)
   const [openCategory, setOpenCategory] = useState<string | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -244,11 +247,13 @@ export default function TastingForm({
     options,
     value,
     onChange,
+    scale,
   }: {
     label: string
     options: string[]
     value: string
     onChange: (value: string) => void
+    scale?: ScaleName
   }) => (
     <div className="space-y-2">
       <span className="block text-sm font-medium text-stone-700 dark:text-stone-300">
@@ -270,7 +275,7 @@ export default function TastingForm({
                 : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600'
             }`}
           >
-            {option}
+            {term(option, locale, scale)}
           </button>
         ))}
       </div>
@@ -314,7 +319,7 @@ export default function TastingForm({
                 style={{ backgroundColor: COLOR_SWATCHES[option] }}
               />
             )}
-            {option}
+            {term(option, locale, 'color')}
           </button>
         ))}
       </div>
@@ -346,11 +351,11 @@ export default function TastingForm({
         />
 
         {/* ── Wine Identity ── */}
-        <SectionHeading>Wine Identity</SectionHeading>
+        <SectionHeading>{t('sectionIdentity')}</SectionHeading>
 
         <div>
           <label htmlFor="wine_name" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-            Wine Name
+            {t('wineName')}
           </label>
           <input
             type="text"
@@ -363,7 +368,8 @@ export default function TastingForm({
         </div>
 
         <RadioGroup
-          label="Wine Type"
+          label={t('wineType')}
+          scale="wineType"
           options={['Red', 'White', 'Rosé', 'Sparkling', 'Fortified']}
           value={formData.wine_type}
           onChange={handleWineTypeChange}
@@ -372,14 +378,14 @@ export default function TastingForm({
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label htmlFor="vintage" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-              Vintage
+              {t('vintage')}
             </label>
             <input
               type="number"
               id="vintage"
               value={formData.vintage}
               onChange={(e) => setFormData({ ...formData, vintage: e.target.value })}
-              placeholder="e.g. 2020"
+              placeholder={t('vintagePlaceholder')}
               min="1900"
               max="2099"
               className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
@@ -387,7 +393,7 @@ export default function TastingForm({
           </div>
           <div className="col-span-2">
             <label htmlFor="producer" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-              Producer
+              {t('producer')}
             </label>
             <input
               type="text"
@@ -402,27 +408,27 @@ export default function TastingForm({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="region" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-              Region
+              {t('region')}
             </label>
             <input
               type="text"
               id="region"
               value={formData.region}
               onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-              placeholder="e.g. Barossa Valley, Burgundy"
+              placeholder={t('regionPlaceholder')}
               className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
             />
           </div>
           <div>
             <label htmlFor="country" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-              Country
+              {t('country')}
             </label>
             <input
               type="text"
               id="country"
               value={formData.country}
               onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-              placeholder="e.g. France"
+              placeholder={t('countryPlaceholder')}
               className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
             />
           </div>
@@ -431,20 +437,20 @@ export default function TastingForm({
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
             <label htmlFor="grape_variety" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-              Grape Variety
+              {t('grapeVariety')}
             </label>
             <input
               type="text"
               id="grape_variety"
               value={formData.grape_variety}
               onChange={(e) => setFormData({ ...formData, grape_variety: e.target.value })}
-              placeholder="e.g. Chardonnay, or Syrah, Grenache"
+              placeholder={t('grapePlaceholder')}
               className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
             />
           </div>
           <div>
             <label htmlFor="alcohol" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-              Alcohol %
+              {t('alcohol')}
             </label>
             <input
               type="number"
@@ -463,26 +469,28 @@ export default function TastingForm({
         {!formData.wine_type ? (
           <div className="mt-8 border border-dashed border-stone-300 dark:border-stone-700 rounded-xl py-12 px-6 text-center">
             <p className="text-lg font-serif text-stone-600 dark:text-stone-400">
-              Select a Wine Type to begin tasting
+              {t('chooseTypeTitle')}
             </p>
             <p className="text-sm text-stone-500 dark:text-stone-500 mt-1">
-              The full SAT form will appear once you choose above.
+              {t('chooseTypeBody')}
             </p>
           </div>
         ) : (
         <>
         {/* ── Appearance ── */}
-        <SectionHeading>Appearance</SectionHeading>
+        <SectionHeading>{t('sectionAppearance')}</SectionHeading>
 
         <RadioGroup
-          label="Clarity"
+          label={t('clarity')}
+          scale="clarity"
           options={['Clear', 'Hazy']}
           value={formData.clarity}
           onChange={(value) => setFormData({ ...formData, clarity: value as typeof formData.clarity })}
         />
 
         <RadioGroup
-          label="Intensity"
+          label={t('intensity')}
+          scale="intensity"
           options={['Pale', 'Medium', 'Deep']}
           value={formData.appearance_intensity}
           onChange={(value) => setFormData({ ...formData, appearance_intensity: value as typeof formData.appearance_intensity })}
@@ -490,7 +498,7 @@ export default function TastingForm({
 
         {formData.wine_type && (
           <ColorRadioGroup
-            label="Color"
+            label={t('color')}
             options={COLOR_OPTIONS[formData.wine_type] || []}
             value={formData.color}
             onChange={(value) => setFormData({ ...formData, color: value })}
@@ -498,17 +506,19 @@ export default function TastingForm({
         )}
 
         {/* ── Nose & Palate ── */}
-        <SectionHeading>Nose & Palate</SectionHeading>
+        <SectionHeading>{t('sectionPalate')}</SectionHeading>
 
         <RadioGroup
-          label="Sweetness"
+          label={t('sweetness')}
+          scale="sweetness"
           options={['Dry', 'Medium', 'Sweet']}
           value={formData.sweetness}
           onChange={(value) => setFormData({ ...formData, sweetness: value as typeof formData.sweetness })}
         />
 
         <RadioGroup
-          label="Acidity"
+          label={t('acidity')}
+          scale="level"
           options={['Low', 'Medium', 'High']}
           value={formData.acidity}
           onChange={(value) => setFormData({ ...formData, acidity: value as typeof formData.acidity })}
@@ -516,7 +526,8 @@ export default function TastingForm({
 
         {formData.wine_type === 'Red' && (
           <RadioGroup
-            label="Tannin"
+            label={t('tannin')}
+          scale="level"
             options={['Low', 'Medium', 'High']}
             value={formData.tannin}
             onChange={(value) => setFormData({ ...formData, tannin: value as typeof formData.tannin })}
@@ -524,7 +535,8 @@ export default function TastingForm({
         )}
 
         <RadioGroup
-          label="Body"
+          label={t('body')}
+          scale="body"
           options={['Light', 'Medium', 'Full']}
           value={formData.body}
           onChange={(value) => setFormData({ ...formData, body: value as typeof formData.body })}
@@ -532,7 +544,8 @@ export default function TastingForm({
 
         {formData.wine_type === 'Sparkling' && (
           <RadioGroup
-            label="Mousse"
+            label={t('mousse')}
+          scale="mousse"
             options={['Delicate', 'Creamy', 'Aggressive']}
             value={formData.mousse}
             onChange={(value) => setFormData({ ...formData, mousse: value as typeof formData.mousse })}
@@ -540,14 +553,15 @@ export default function TastingForm({
         )}
 
         <RadioGroup
-          label="Finish"
+          label={t('finish')}
+          scale="finish"
           options={['Short', 'Medium', 'Long']}
           value={formData.finish}
           onChange={(value) => setFormData({ ...formData, finish: value as typeof formData.finish })}
         />
 
         {/* ── Aromas & Flavors ── */}
-        <SectionHeading>Aromas & Flavors</SectionHeading>
+        <SectionHeading>{t('sectionAromas')}</SectionHeading>
 
         {formData.aromas.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
@@ -556,7 +570,7 @@ export default function TastingForm({
                 key={descriptor}
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200"
               >
-                {descriptor}
+                {term(descriptor, locale)}
                 <button
                   type="button"
                   onClick={() => toggleAroma(descriptor)}
@@ -582,7 +596,7 @@ export default function TastingForm({
           return (
           <div key={group} className="space-y-2">
             <label className="block text-sm font-medium text-stone-700 dark:text-stone-300">
-              {group}
+              {term(group, locale)}
             </label>
             <div className="flex flex-wrap gap-2">
               {visibleCategories.map(([category, descriptors]) => {
@@ -605,7 +619,7 @@ export default function TastingForm({
                         onClick={() => toggleAroma(category)}
                         className="pl-3 pr-2 py-1.5 text-sm font-medium inline-flex items-center gap-1.5"
                       >
-                        {category}
+                        {term(category, locale)}
                         {descriptorCount > 0 && (
                           <span className="opacity-75 text-xs">+{descriptorCount}</span>
                         )}
@@ -643,7 +657,7 @@ export default function TastingForm({
                               onChange={() => toggleAroma(descriptor)}
                               className="w-4 h-4 rounded border-stone-300 dark:border-stone-600"
                             />
-                            <span className="text-sm text-stone-700 dark:text-stone-300">{descriptor}</span>
+                            <span className="text-sm text-stone-700 dark:text-stone-300">{term(descriptor, locale)}</span>
                           </label>
                         ))}
                       </div>
@@ -657,11 +671,11 @@ export default function TastingForm({
         })}
 
         {/* ── Conclusions ── */}
-        <SectionHeading>Conclusions</SectionHeading>
+        <SectionHeading>{t('sectionConclusions')}</SectionHeading>
 
         <div>
           <label htmlFor="quality_level" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-            Quality Level
+            {t('qualityLevel')}
           </label>
           <select
             id="quality_level"
@@ -669,18 +683,18 @@ export default function TastingForm({
             onChange={(e) => setFormData({ ...formData, quality_level: e.target.value })}
             className="w-full px-4 py-2 border border-stone-300 dark:border-stone-700 rounded-md bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:border-transparent"
           >
-            <option value="">Select...</option>
-            <option value="Poor">Poor</option>
-            <option value="Acceptable">Acceptable</option>
-            <option value="Good">Good</option>
-            <option value="Very Good">Very Good</option>
-            <option value="Outstanding">Outstanding</option>
+            <option value="">{t('selectPlaceholder')}</option>
+            {['Poor', 'Acceptable', 'Good', 'Very Good', 'Outstanding'].map((q) => (
+              <option key={q} value={q}>
+                {term(q, locale, 'quality')}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
           <label htmlFor="notes" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-            Notes (optional)
+            {t('notesOptional')}
           </label>
           <textarea
             id="notes"

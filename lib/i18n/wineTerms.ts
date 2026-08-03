@@ -213,16 +213,41 @@ export const AROMA_DESCRIPTOR_ZH: Record<string, string> = {
   Mocha: '摩卡',
 }
 
+// Scales share words across fields (Medium is both an intensity and a body), so
+// they are looked up per-field rather than through the catch-all below.
+const SCALE_MAPS: Record<string, Record<string, string>> = {
+  clarity: CLARITY_ZH,
+  intensity: INTENSITY_ZH,
+  sweetness: SWEETNESS_ZH,
+  level: LEVEL_ZH,
+  body: BODY_ZH,
+  mousse: MOUSSE_ZH,
+  finish: FINISH_ZH,
+  quality: QUALITY_ZH,
+  wineType: WINE_TYPE_ZH,
+  color: COLOR_ZH,
+}
+
+export type ScaleName = keyof typeof SCALE_MAPS
+
 /**
- * Translate a stored English tasting term for display.
+ * Render a stored English term in the given locale.
  *
- * Falls back to the English when a term has no mapping, so an unmapped value
- * still renders rather than showing an empty chip.
+ * `scale` disambiguates the shared words: "Medium" is 中 either way, but "Low"
+ * as an acidity level and "Light" as a body are different scales, and keeping
+ * them separate means a future wording change to one does not silently move the
+ * other.
+ *
+ * Unmapped values fall through to the English so a new term renders as itself
+ * rather than as a blank chip.
  */
-export function zhTerm(value: string): string {
+export function term(value: string, locale: 'zh' | 'en', scale?: ScaleName): string {
+  if (locale === 'en' || !value) return value
+  if (scale) return SCALE_MAPS[scale][value] ?? value
   return (
     AROMA_DESCRIPTOR_ZH[value] ??
     AROMA_CATEGORY_ZH[value] ??
+    AROMA_GROUP_ZH[value] ??
     COLOR_ZH[value] ??
     WINE_TYPE_ZH[value] ??
     QUALITY_ZH[value] ??

@@ -1,16 +1,20 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import LogoutButton from './LogoutButton'
+import LocaleSwitcher from './LocaleSwitcher'
+import { getT } from '@/lib/i18n/server'
 
 export default async function Header() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  const t = await getT()
 
   return (
     <header className="border-b border-stone-200 dark:border-stone-800">
       <nav className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        {/* The product name is never translated. */}
         <Link
           href="/"
           className="text-xl font-serif font-semibold text-stone-900 dark:text-stone-100 hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
@@ -24,15 +28,16 @@ export default async function Header() {
                 href="/add"
                 className="text-sm text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
               >
-                Add Tasting
+                {t('addTasting')}
               </Link>
               <Link
                 href="/tastings"
                 className="text-sm text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
               >
-                Tastings
+                {t('tastings')}
               </Link>
               <div className="flex items-center gap-3 pl-4 border-l border-stone-300 dark:border-stone-700">
+                <LocaleSwitcher />
                 <span className="text-xs text-stone-500 dark:text-stone-400 hidden sm:inline">
                   {user.email}
                 </span>
@@ -41,17 +46,18 @@ export default async function Header() {
             </>
           ) : (
             <>
+              <LocaleSwitcher />
               <Link
                 href="/login"
                 className="text-sm text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
               >
-                Log In
+                {t('logIn')}
               </Link>
               <Link
                 href="/signup"
                 className="text-sm bg-wine-700 hover:bg-wine-800 text-stone-50 px-4 py-2 rounded-md transition-colors"
               >
-                Sign Up
+                {t('signUp')}
               </Link>
             </>
           )}

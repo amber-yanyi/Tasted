@@ -4,14 +4,16 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { deleteLabelImage } from '@/lib/labelStorage'
+import { useLocale } from '@/lib/i18n/LocaleProvider'
 
 export default function DeleteTastingButton({ id }: { id: string }) {
   const router = useRouter()
+  const { t } = useLocale()
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this tasting? This cannot be undone.')) {
+    if (!window.confirm(t('confirmDelete'))) {
       return
     }
 
@@ -24,7 +26,7 @@ export default function DeleteTastingButton({ id }: { id: string }) {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      setError('You must be logged in')
+      setError(t('mustBeLoggedIn'))
       setDeleting(false)
       return
     }
@@ -63,7 +65,7 @@ export default function DeleteTastingButton({ id }: { id: string }) {
         disabled={deleting}
         className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
       >
-        {deleting ? 'Deleting...' : 'Delete'}
+        {deleting ? t('deleting') : t('delete')}
       </button>
       {error && (
         <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>

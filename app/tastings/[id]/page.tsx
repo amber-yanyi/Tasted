@@ -3,12 +3,16 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import DeleteTastingButton from '@/components/DeleteTastingButton'
 import { getLabelImageUrl } from '@/lib/labelStorage'
+import { getT, getLocale } from '@/lib/i18n/server'
+import { term } from '@/lib/i18n/wineTerms'
 
 export const dynamic = 'force-dynamic'
 
 export default async function TastingDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
+  const t = await getT()
+  const locale = await getLocale()
 
   // Check authentication
   const {
@@ -53,7 +57,7 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
         href="/tastings"
         className="inline-flex items-center text-sm text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 mb-8 transition-colors"
       >
-        &larr; Back to Tastings
+        &larr; {t('backToTastings')}
       </Link>
 
       <div className="space-y-8">
@@ -68,20 +72,20 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
                 href={`/tastings/${id}/edit`}
                 className="px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700 rounded-md hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
               >
-                Edit
+                {t('edit')}
               </Link>
               <DeleteTastingButton id={id} />
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-stone-600 dark:text-stone-400">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200">
-              {tasting.wine_type}
+              {term(tasting.wine_type, locale, 'wineType')}
             </span>
             {tasting.vintage && (
               <span className="text-sm font-medium">{tasting.vintage}</span>
             )}
             <span className="text-sm">
-              {new Date(tasting.created_at).toLocaleDateString('en-US', {
+              {new Date(tasting.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -107,7 +111,7 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
         {labelUrl && (
           <div>
             <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
-              Label
+              {t('labelHeading')}
             </h2>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -122,12 +126,12 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
         {(tasting.clarity || tasting.appearance_intensity || tasting.color) && (
           <div className="bg-stone-50 dark:bg-stone-900/50 rounded-lg p-6">
             <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-4">
-              Appearance
+              {t('sectionAppearance')}
             </h2>
             <dl className="space-y-0">
-              <AttributeRow label="Clarity" value={tasting.clarity} />
-              <AttributeRow label="Intensity" value={tasting.appearance_intensity} />
-              <AttributeRow label="Color" value={tasting.color} />
+              <AttributeRow label={t('clarity')} value={term(tasting.clarity ?? '', locale, 'clarity')} />
+              <AttributeRow label={t('intensity')} value={term(tasting.appearance_intensity ?? '', locale, 'intensity')} />
+              <AttributeRow label={t('color')} value={term(tasting.color ?? '', locale, 'color')} />
             </dl>
           </div>
         )}
@@ -135,19 +139,19 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
         {/* Nose & Palate */}
         <div className="bg-stone-50 dark:bg-stone-900/50 rounded-lg p-6">
           <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-4">
-            Nose & Palate
+            {t('sectionPalate')}
           </h2>
           <dl className="space-y-0">
-            <AttributeRow label="Sweetness" value={tasting.sweetness} />
-            <AttributeRow label="Acidity" value={tasting.acidity} />
+            <AttributeRow label={t('sweetness')} value={term(tasting.sweetness ?? '', locale, 'sweetness')} />
+            <AttributeRow label={t('acidity')} value={term(tasting.acidity ?? '', locale, 'level')} />
             {tasting.wine_type === 'Red' && tasting.tannin && (
-              <AttributeRow label="Tannin" value={tasting.tannin} />
+              <AttributeRow label={t('tannin')} value={term(tasting.tannin ?? '', locale, 'level')} />
             )}
-            <AttributeRow label="Body" value={tasting.body} />
+            <AttributeRow label={t('body')} value={term(tasting.body ?? '', locale, 'body')} />
             {tasting.wine_type === 'Sparkling' && tasting.mousse && (
-              <AttributeRow label="Mousse" value={tasting.mousse} />
+              <AttributeRow label={t('mousse')} value={term(tasting.mousse ?? '', locale, 'mousse')} />
             )}
-            <AttributeRow label="Finish" value={tasting.finish} />
+            <AttributeRow label={t('finish')} value={term(tasting.finish ?? '', locale, 'finish')} />
           </dl>
         </div>
 
@@ -155,7 +159,7 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
         {tasting.aromas && tasting.aromas.length > 0 && (
           <div>
             <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
-              Aromas & Flavors
+              {t('sectionAromas')}
             </h2>
             <div className="flex flex-wrap gap-2">
               {tasting.aromas.map((aroma: string) => (
@@ -163,7 +167,7 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
                   key={aroma}
                   className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200"
                 >
-                  {aroma}
+                  {term(aroma, locale)}
                 </span>
               ))}
             </div>
@@ -174,11 +178,11 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
         {tasting.quality_level && (
           <div>
             <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
-              Conclusions
+              {t('sectionConclusions')}
             </h2>
             <p className="text-sm text-stone-700 dark:text-stone-300">
-              <span className="font-medium text-stone-500 dark:text-stone-400">Quality Level:</span>{' '}
-              {tasting.quality_level}
+              <span className="font-medium text-stone-500 dark:text-stone-400">{t('qualityLevel')}:</span>{' '}
+              {term(tasting.quality_level, locale, 'quality')}
             </p>
           </div>
         )}
@@ -187,7 +191,7 @@ export default async function TastingDetail({ params }: { params: Promise<{ id: 
         {tasting.notes && (
           <div>
             <h2 className="font-serif text-xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
-              Notes
+              {t('notesHeading')}
             </h2>
             <p className="text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-wrap">
               {tasting.notes}

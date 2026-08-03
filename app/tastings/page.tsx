@@ -3,11 +3,15 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { Tasting } from '@/lib/types'
 import { LABELS_BUCKET } from '@/lib/labelStorage'
+import { getT, getLocale } from '@/lib/i18n/server'
+import { term } from '@/lib/i18n/wineTerms'
 
 export const dynamic = 'force-dynamic'
 
 export default async function Tastings() {
   const supabase = await createClient()
+  const t = await getT()
+  const locale = await getLocale()
 
   // Check authentication
   const {
@@ -43,7 +47,7 @@ export default async function Tastings() {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-red-600 dark:text-red-400">Error loading tastings: {error.message}</p>
+        <p className="text-red-600 dark:text-red-400">{t('errorLoading')}{error.message}</p>
       </div>
     )
   }
@@ -52,24 +56,24 @@ export default async function Tastings() {
     <div className="max-w-4xl mx-auto px-6 py-12">
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-serif text-4xl font-semibold text-stone-900 dark:text-stone-100">
-          Tastings
+          {t('tastings')}
         </h1>
         <Link
           href="/add"
           className="px-6 py-2 bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 rounded-md hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors font-medium text-sm"
         >
-          Add Tasting
+          {t('addTasting')}
         </Link>
       </div>
 
       {!tastings || tastings.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-stone-600 dark:text-stone-400 mb-6">No tastings yet.</p>
+          <p className="text-stone-600 dark:text-stone-400 mb-6">{t('noTastingsYet')}</p>
           <Link
             href="/add"
             className="inline-block px-6 py-2 bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 rounded-md hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors font-medium"
           >
-            Add your first tasting
+            {t('addFirstTasting')}
           </Link>
         </div>
       ) : (
@@ -95,7 +99,7 @@ export default async function Tastings() {
                   </h2>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-stone-600 dark:text-stone-400 mb-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200">
-                      {tasting.wine_type}
+                      {term(tasting.wine_type, locale, 'wineType')}
                     </span>
                     {tasting.vintage && (
                       <span className="text-xs font-medium">{tasting.vintage}</span>
@@ -106,7 +110,7 @@ export default async function Tastings() {
                     {tasting.grape_variety && (
                       <span className="text-xs">{tasting.grape_variety}</span>
                     )}
-                    <span>{new Date(tasting.created_at).toLocaleDateString('en-US', {
+                    <span>{new Date(tasting.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric'

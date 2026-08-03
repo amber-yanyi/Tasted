@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import TastingForm, { TastingFormData, toTastingPayload } from '@/components/TastingForm'
 import { uploadLabelImage, getLabelImageUrl, deleteLabelImage } from '@/lib/labelStorage'
+import { useLocale } from '@/lib/i18n/LocaleProvider'
 
 export default function EditTasting() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
+  const { t } = useLocale()
   const [initialData, setInitialData] = useState<TastingFormData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
@@ -88,7 +90,7 @@ export default function EditTasting() {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      setError('You must be logged in')
+      setError(t('mustBeLoggedIn'))
       return
     }
 
@@ -99,7 +101,7 @@ export default function EditTasting() {
       try {
         labelPath = await uploadLabelImage(supabase, user.id, labelImage)
       } catch {
-        setError('Could not upload the new label photo. Keeping the previous one.')
+        setError(t('labelUploadFailedKeep'))
         labelPath = existingPath
       }
     } else if (labelCleared) {
@@ -125,9 +127,9 @@ export default function EditTasting() {
   if (notFound) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-12 text-center">
-        <p className="text-stone-600 dark:text-stone-400">Tasting not found.</p>
+        <p className="text-stone-600 dark:text-stone-400">{t('tastingNotFound')}</p>
         <Link href="/tastings" className="text-sm text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 mt-4 inline-block">
-          Back to Tastings
+          {t('backToTastings')}
         </Link>
       </div>
     )
@@ -151,18 +153,18 @@ export default function EditTasting() {
         href={`/tastings/${params.id}`}
         className="inline-flex items-center text-sm text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 mb-8 transition-colors"
       >
-        &larr; Back to Tasting
+        &larr; {t('backToTasting')}
       </Link>
 
       <h1 className="font-serif text-4xl font-semibold text-stone-900 dark:text-stone-100 mb-8">
-        Edit Tasting
+        {t('editTastingTitle')}
       </h1>
 
       <TastingForm
         initialData={initialData}
         onSubmit={handleSubmit}
-        submitLabel="Update Tasting"
-        loadingLabel="Updating..."
+        submitLabel={t('updateTasting')}
+        loadingLabel={t('updating')}
         error={error}
         existingImageUrl={existingUrl}
       />

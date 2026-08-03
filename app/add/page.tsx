@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import TastingForm, { TastingFormData, toTastingPayload } from '@/components/TastingForm'
 import { uploadLabelImage } from '@/lib/labelStorage'
+import { useLocale } from '@/lib/i18n/LocaleProvider'
 
 export default function AddTasting() {
   const router = useRouter()
+  const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (formData: TastingFormData, labelImage: File | null) => {
@@ -19,7 +21,7 @@ export default function AddTasting() {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      setError('You must be logged in to add a tasting')
+      setError(t('mustBeLoggedIn'))
       return
     }
 
@@ -30,7 +32,7 @@ export default function AddTasting() {
       try {
         labelPath = await uploadLabelImage(supabase, user.id, labelImage)
       } catch {
-        setError('Could not upload the label photo. Saving the tasting without it.')
+        setError(t('labelUploadFailed'))
       }
     }
 
@@ -48,13 +50,13 @@ export default function AddTasting() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       <h1 className="font-serif text-4xl font-semibold text-stone-900 dark:text-stone-100 mb-8">
-        Add Tasting
+        {t('addTastingTitle')}
       </h1>
 
       <TastingForm
         onSubmit={handleSubmit}
-        submitLabel="Save Tasting"
-        loadingLabel="Saving..."
+        submitLabel={t('saveTasting')}
+        loadingLabel={t('saving')}
         error={error}
       />
     </div>
