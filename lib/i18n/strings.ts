@@ -26,6 +26,10 @@ export const STRINGS = {
     zh: 'Remember every bottle you taste.',
     en: 'Remember every bottle you taste.',
   },
+  betaNote: {
+    zh: 'Beta · 还在打磨中，遇到问题或有想法都欢迎直接告诉我',
+    en: 'Beta · Still being shaped — tell me anything that breaks or bugs you',
+  },
   getStarted: { zh: '开始记录', en: 'Get Started' },
   viewTastings: { zh: '我的酒单', en: 'View Tastings' },
   featureLabelTitle: { zh: '拍下酒标', en: 'Photograph the label' },

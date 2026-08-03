@@ -55,6 +55,13 @@ export default async function Home() {
         </div>
       </div>
 
+      {/* Sits under the buttons rather than above the fold's headline: it should
+          set expectations for someone who has decided to try it, not be the
+          first thing that greets them. */}
+      <p className="mt-10 text-center text-xs text-stone-400 dark:text-stone-500">
+        {t('betaNote')}
+      </p>
+
       <div className="hidden sm:grid mt-24 grid-cols-3 gap-8 text-center">
         <div className="space-y-2">
           <h3 className="font-serif text-lg font-semibold text-stone-900 dark:text-stone-100">
