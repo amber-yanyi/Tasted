@@ -22,14 +22,14 @@ export const metadata: Metadata = {
   },
   applicationName: "Tasted",
   openGraph: {
-    title: "Tasted",
+    title: "Tasted — Remember every bottle you taste.",
     description: "Photograph a label, keep the note, and build a memory of everything you've tasted.",
     images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tasted",
+    title: "Tasted — Remember every bottle you taste.",
     description: "Photograph a label, keep the note, and build a memory of everything you've tasted.",
     images: ["/og-image.jpg"],
   },
