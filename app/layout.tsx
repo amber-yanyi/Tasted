@@ -12,6 +12,13 @@ const crimson = Crimson_Text({
 });
 
 export const metadata: Metadata = {
+  // Relative image paths in openGraph/twitter are resolved against this. Without
+  // it Next falls back to the Vercel deployment URL, so og:image pointed at
+  // *.vercel.app — a hostname that is DNS-poisoned in mainland China, leaving
+  // the link preview blank for exactly the people this is shared with.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.tasted.app"
+  ),
   title: "Tasted - Wine Tasting Notes",
   description: "Photograph a label, keep the note, and build a memory of everything you've tasted.",
   manifest: "/manifest.json",
