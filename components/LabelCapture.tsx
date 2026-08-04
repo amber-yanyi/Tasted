@@ -140,7 +140,6 @@ export default function LabelCapture({
                 <input
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   disabled={reading}
                   onChange={(e) => {
                     const f = e.target.files?.[0]
@@ -175,9 +174,11 @@ export default function LabelCapture({
             {reading ? t('captureReading') : t('captureButton')}
             <input
               type="file"
+              // No `capture` attribute: it does not merely prefer the camera, it
+              // restricts the picker to it, and phones then offer no way into the
+              // photo library. Plenty of bottles get photographed at the table
+              // and logged later from the album.
               accept="image/*"
-              // Opens the rear camera directly on a phone.
-              capture="environment"
               disabled={reading}
               onChange={(e) => {
                 const f = e.target.files?.[0]
