@@ -10,8 +10,8 @@
 export type Locale = 'zh' | 'en'
 
 export const LOCALE_COOKIE = 'tasted_locale'
-/** Chinese is the default: the first users are Chinese-speaking. */
-export const DEFAULT_LOCALE: Locale = 'zh'
+/** English is the default; Chinese is one tap away in the header switcher. */
+export const DEFAULT_LOCALE: Locale = 'en'
 
 export function isLocale(value: unknown): value is Locale {
   return value === 'zh' || value === 'en'
